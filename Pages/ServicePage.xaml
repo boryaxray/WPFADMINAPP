@@ -1,0 +1,253 @@
+﻿<Page x:Class="WPFAPP.Pages.ServicePage"
+     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+      Title="Управление службой"
+      Background="Transparent">
+
+    <Page.Resources>
+        <Style x:Key="CardStyle" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="BorderBrush" Value="#E0E0E0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="8" ShadowDepth="2" Color="#20000000"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#673AB7"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Padding" Value="15,10"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#5E35B1"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="WarningButton" TargetType="Button">
+            <Setter Property="Background" Value="#F44336"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Padding" Value="15,10"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#D32F2F"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Простой стиль для кнопок с обводкой -->
+        <Style x:Key="OutlinedButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#673AB7"/>
+            <Setter Property="BorderBrush" Value="#673AB7"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Padding" Value="8,5"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#673AB7"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="#5E35B1"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Page.Resources>
+
+    <Grid Margin="10">
+        <Border Style="{StaticResource CardStyle}" Padding="20">
+            <StackPanel>
+                <TextBlock Text="Управление службой" 
+                           FontSize="18"
+                           FontWeight="Bold"
+                           Foreground="#333333"
+                           Margin="0,0,0,20"/>
+
+                <!-- Кнопки управления -->
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                    <Button x:Name="InstallBtn" 
+                            Style="{StaticResource PrimaryButton}"
+                            Width="150"
+                            Height="40"
+                            Padding="15,10"
+                            Margin="0,0,10,0"
+                            Click="InstallBtn_Click">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="Download" Width="20" Height="20" Margin="0,0,8,0"/>
+                            <TextBlock Text="Установить"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button x:Name="UninstallBtn" 
+                            Style="{StaticResource WarningButton}"
+                            Width="150"
+                            Height="40"
+                            Padding="15,10"
+                            Margin="0,0,10,0"
+                            Click="UninstallBtn_Click">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="Delete" Width="20" Height="20" Margin="0,0,8,0"/>
+                            <TextBlock Text="Удалить"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button x:Name="DebugBtn" 
+                            Width="150"
+                            Height="40"
+                            Background="#FF9800"
+                            Foreground="White"
+                            BorderThickness="0"
+                            FontSize="12"
+                            FontWeight="SemiBold"
+                            Padding="15,10"
+                            Cursor="Hand"
+                            Click="DebugBtn_Click">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="Bug" Width="20" Height="20" Margin="0,0,8,0"/>
+                            <TextBlock Text="Режим отладки"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+
+                <!-- Путь для логов -->
+                <StackPanel Margin="0,0,0,15">
+                    <TextBlock Text="Путь для логов:" 
+               FontWeight="SemiBold"
+               Foreground="#333333"
+               Margin="0,0,0,5"/>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox x:Name="LogsPathTextBox"
+                 Grid.Column="0"
+                 Text="C:\ProgramData\AppControl\Logs"
+                 FontSize="12"
+                 Padding="10,8"
+                 VerticalContentAlignment="Center"/>
+
+                        <Button Grid.Column="1"
+                Content="..."
+                Width="40"
+                Height="30"
+                Margin="5,0"
+                Style="{StaticResource OutlinedButton}"
+                Click="BrowseLogsPathBtn_Click"
+                ToolTip="Выбрать папку для логов"/>
+
+                        <Button Grid.Column="2"
+                Content="Применить"
+                Height="30"
+                Style="{StaticResource OutlinedButton}"
+                Click="ApplyLogsPathBtn_Click"
+                ToolTip="Применить путь для логов"/>
+                    </Grid>
+                </StackPanel>
+
+                <!-- Путь для белого списка -->
+                <StackPanel Margin="0,0,0,15">
+                    <TextBlock Text="Путь для белого списка:" 
+               FontWeight="SemiBold"
+               Foreground="#333333"
+               Margin="0,0,0,5"/>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox x:Name="WhiteListPathTextBox"
+                 Grid.Column="0"
+                 Text="C:\ProgramData\AppControl\WhiteList"
+                 FontSize="12"
+                 Padding="10,8"
+                 VerticalContentAlignment="Center"/>
+
+                        <Button Grid.Column="1"
+                Content="..."
+                Width="40"
+                Height="30"
+                Margin="5,0"
+                Style="{StaticResource OutlinedButton}"
+                Click="BrowseWhiteListPathBtn_Click"
+                ToolTip="Выбрать папку для белого списка"/>
+
+                        <Button Grid.Column="2"
+                Content="Применить"
+                Height="30"
+                Style="{StaticResource OutlinedButton}"
+                Click="ApplyWhiteListPathBtn_Click"
+                ToolTip="Применить путь для белого списка"/>
+                    </Grid>
+                </StackPanel>
+
+                <!-- Статус службы -->
+                <StackPanel Margin="0,0,0,20">
+                    <TextBlock Text="Текущий статус службы:" 
+                               FontWeight="SemiBold"
+                               Foreground="#333333"
+                               Margin="0,0,0,10"/>
+
+                    <Border Background="#F5F5F5" 
+                            CornerRadius="4" 
+                            Padding="15">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse x:Name="StatusIcon" 
+                                    Width="12" 
+                                    Height="12" 
+                                    Fill="Gray" 
+                                    Margin="0,0,10,0"
+                                    VerticalAlignment="Center"/>
+                            <TextBlock x:Name="StatusText" 
+                                       Text="Проверка..." 
+                                       VerticalAlignment="Center"
+                                       FontSize="13"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- Примечания -->
+                <Border Background="#E8F5E9" 
+                        CornerRadius="4" 
+                        Padding="15">
+                    <StackPanel>
+                        <TextBlock Text="Примечание:" 
+                                   FontWeight="SemiBold"
+                                   Foreground="#333333"
+                                   Margin="0,0,0,10"/>
+
+                        <TextBlock Text="Все команды передаются основной программе (ApplicationControlService.exe). Она должна находиться в той же папке, что и это приложение." 
+                                   TextWrapping="Wrap"
+                                   Foreground="#666666"
+                                   FontSize="13"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Page>

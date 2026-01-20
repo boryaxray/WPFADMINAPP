@@ -1,0 +1,17 @@
+﻿<Application x:Class="WPFAPP.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:WPFAPP"
+             xmlns:converters="clr-namespace:WPFAPP.Converters"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Light.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <!-- Конвертеры -->
+            <converters:IndexConverter x:Key="IndexConverter" />
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
