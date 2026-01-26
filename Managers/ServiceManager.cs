@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.ServiceProcess;
+using System.Text;
 using System.Windows;
 
 namespace WPFAPP.Managers
@@ -50,36 +51,47 @@ namespace WPFAPP.Managers
                 return $"Error: {ex.Message}";
             }
         }
+        /*        public static void InstallService(string logsPath = null, string whiteListPath = null)
+                {
+                    try
+                    {
+                        // Если пути не указаны - берем из настроек
+                        if (string.IsNullOrEmpty(logsPath))
+                        {
+                            logsPath = Properties.Settings.Default.LogsPath;
+                            if (string.IsNullOrEmpty(logsPath))
+                                logsPath = @"C:\ProgramData\AppControl\Logs";
+                        }
 
-        //public static void InstallService(string logsPath = null, string whiteListPath = null)
-        //{
-        //    try
-        //    {
-        //        // Если пути не указаны - берем из настроек
-        //        if (string.IsNullOrEmpty(logsPath))
-        //        {
-        //            logsPath = Properties.Settings.Default.LogsPath;
-        //            if (string.IsNullOrEmpty(logsPath))
-        //                logsPath = @"C:\ProgramData\AppControl\Logs";
-        //        }
+                        if (string.IsNullOrEmpty(whiteListPath))
+                        {
+                            whiteListPath = Properties.Settings.Default.WhiteListPath;
+                            if (string.IsNullOrEmpty(whiteListPath))
+                                whiteListPath = @"C:\ProgramData\AppControl\WhiteList";
+                        }
 
-        //        if (string.IsNullOrEmpty(whiteListPath))
-        //        {
-        //            whiteListPath = Properties.Settings.Default.WhiteListPath;
-        //            if (string.IsNullOrEmpty(whiteListPath))
-        //                whiteListPath = @"C:\ProgramData\AppControl\WhiteList";
-        //        }
+                        // ФИКС: Убираем кавычки и пробелы
+                        logsPath = logsPath?.Trim().Trim('"');
+                        whiteListPath = whiteListPath?.Trim().Trim('"');
 
-        //        // передаем пути служжбе
-        //        string args = $"--install \"{logsPath}\" \"{whiteListPath}\"";
+                        // Сохраняем пути в настройках
+                        Properties.Settings.Default.LogsPath = logsPath;
+                        Properties.Settings.Default.WhiteListPath = whiteListPath;
+                        Properties.Settings.Default.Save();
 
-        //        RunServiceCommand(args);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception($"Ошибка установки службы: {ex.Message}", ex);
-        //    }
-        //}
+                        // передаем пути службе
+                        string args = $"--install \"{logsPath}\" \"{whiteListPath}\"";
+
+                        RunServiceCommand(args);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception($"Ошибка установки службы: {ex.Message}", ex);
+                    }
+                }*/
+
+        // В файле ServiceManager.cs добавьте/измените метод InstallService:
+
         public static void InstallService(string logsPath = null, string whiteListPath = null)
         {
             try
@@ -112,12 +124,107 @@ namespace WPFAPP.Managers
                 string args = $"--install \"{logsPath}\" \"{whiteListPath}\"";
 
                 RunServiceCommand(args);
+
+                // ДОБАВЛЯЕМ: После установки службы настраиваем самовосстановление
+                ConfigureServiceRecovery();
             }
             catch (Exception ex)
             {
                 throw new Exception($"Ошибка установки службы: {ex.Message}", ex);
             }
         }
+
+        // ДОБАВЛЯЕМ новый метод для настройки самовосстановления:
+        private static void ConfigureServiceRecovery()
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine("Настройка самовосстановления службы...");
+
+                // Команда для настройки восстановления при сбоях
+                // reset= 0 - счетчик сбоев никогда не сбрасывается
+                // actions= restart/5000/restart/5000/restart/5000 - 3 попытки перезапуска через 5 секунд
+                string recoveryCommand = $"failure AppControlService reset= 0 actions= restart/5000/restart/5000/restart/5000";
+
+                RunSCCommand(recoveryCommand, "настройка восстановления");
+
+                // Включаем флаг восстановления при аварийном завершении
+                string failureFlagCommand = $"failureflag AppControlService 1";
+                RunSCCommand(failureFlagCommand, "включение восстановления");
+
+                System.Diagnostics.Debug.WriteLine("Самовосстановление настроено успешно");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Ошибка настройки самовосстановления: {ex.Message}");
+                // Не бросаем исключение, чтобы не сломать установку
+            }
+        }
+
+        // ДОБАВЛЯЕМ метод для выполнения SC команды:
+        private static bool RunSCCommand(string arguments, string operationName)
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:HH:mm:ss}] sc.exe {arguments}");
+
+                using (Process process = new Process())
+                {
+                    process.StartInfo.FileName = "sc.exe";
+                    process.StartInfo.Arguments = arguments;
+                    process.StartInfo.UseShellExecute = false;
+                    process.StartInfo.CreateNoWindow = true;
+                    process.StartInfo.RedirectStandardOutput = true;
+                    process.StartInfo.RedirectStandardError = true;
+
+                    // Важно использовать кодировку 866 для русской консоли
+                    process.StartInfo.StandardOutputEncoding = System.Text.Encoding.GetEncoding(866);
+                    process.StartInfo.StandardErrorEncoding = System.Text.Encoding.GetEncoding(866);
+
+                    StringBuilder output = new StringBuilder();
+                    process.OutputDataReceived += (sender, e) =>
+                    {
+                        if (!string.IsNullOrEmpty(e.Data))
+                        {
+                            output.AppendLine(e.Data);
+                            System.Diagnostics.Debug.WriteLine($"  {e.Data}");
+                        }
+                    };
+
+                    process.ErrorDataReceived += (sender, e) =>
+                    {
+                        if (!string.IsNullOrEmpty(e.Data))
+                        {
+                            System.Diagnostics.Debug.WriteLine($"  [ОШИБКА] {e.Data}");
+                        }
+                    };
+
+                    process.Start();
+                    process.BeginOutputReadLine();
+                    process.BeginErrorReadLine();
+
+                    process.WaitForExit(15000); // 15 секунд
+
+                    System.Diagnostics.Debug.WriteLine($"  Код выхода: {process.ExitCode}");
+
+                    // Коды успеха для sc.exe
+                    if (process.ExitCode == 0 || process.ExitCode == 1073 || output.ToString().Contains("SUCCESS"))
+                    {
+                        System.Diagnostics.Debug.WriteLine($"  ✓ {operationName} - УСПЕШНО");
+                        return true;
+                    }
+
+                    System.Diagnostics.Debug.WriteLine($"  ✗ {operationName} - НЕУДАЧА (код: {process.ExitCode})");
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"  ✗ Ошибка при {operationName}: {ex.Message}");
+                return false;
+            }
+        }
+
         private static void RunServiceCommand(string arguments)
         {
             try
@@ -235,6 +342,32 @@ namespace WPFAPP.Managers
             catch (Exception ex)
             {
                 throw new Exception($"Ошибка остановки службы: {ex.Message}");
+            }
+        }
+
+        public static string GetServiceRecoveryInfo()
+        {
+            try
+            {
+                using (Process process = new Process())
+                {
+                    process.StartInfo.FileName = "sc.exe";
+                    process.StartInfo.Arguments = "qfailure AppControlService";
+                    process.StartInfo.UseShellExecute = false;
+                    process.StartInfo.CreateNoWindow = true;
+                    process.StartInfo.RedirectStandardOutput = true;
+                    process.StartInfo.StandardOutputEncoding = System.Text.Encoding.GetEncoding(866);
+
+                    process.Start();
+                    string output = process.StandardOutput.ReadToEnd();
+                    process.WaitForExit(5000);
+
+                    return output;
+                }
+            }
+            catch (Exception ex)
+            {
+                return $"Ошибка получения информации: {ex.Message}";
             }
         }
 

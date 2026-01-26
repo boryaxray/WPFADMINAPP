@@ -3,12 +3,12 @@
   "WorkspaceRootPath": "C:\\ApplicationControlService\\WPFAPP\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfapp\\managers\\servicemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|solutionrelative:managers\\servicemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfapp\\pages\\servicepage.xaml.cs||{8B382828-6202-11D1-8870-0000F87579D2}|",
       "RelativeMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|solutionrelative:pages\\servicepage.xaml.cs||{8B382828-6202-11D1-8870-0000F87579D2}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfapp\\managers\\servicemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|solutionrelative:managers\\servicemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfapp\\pages\\servicepage.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
@@ -93,7 +93,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 4,
+          "SelectedChildIndex": 5,
           "Children": [
             {
               "$type": "Bookmark",
@@ -127,28 +127,29 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "ServiceManager.cs",
               "DocumentMoniker": "C:\\ApplicationControlService\\WPFAPP\\Managers\\ServiceManager.cs",
               "RelativeDocumentMoniker": "Managers\\ServiceManager.cs",
               "ToolTip": "C:\\ApplicationControlService\\WPFAPP\\Managers\\ServiceManager.cs",
               "RelativeToolTip": "Managers\\ServiceManager.cs",
-              "ViewState": "AgIAABwAAAAAAAAAAAAgwAsAAABJAAAAAAAAAA==",
+              "ViewState": "AgIAAEYBAAAAAAAAAAAAAHQBAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-12-19T20:34:04.023Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "ServicePage.xaml.cs",
               "DocumentMoniker": "C:\\ApplicationControlService\\WPFAPP\\Pages\\ServicePage.xaml.cs",
               "RelativeDocumentMoniker": "Pages\\ServicePage.xaml.cs",
               "ToolTip": "C:\\ApplicationControlService\\WPFAPP\\Pages\\ServicePage.xaml.cs",
               "RelativeToolTip": "Pages\\ServicePage.xaml.cs",
-              "ViewState": "AgIAAHAAAAAAAAAAAAAMwIkAAAAbAAAAAAAAAA==",
+              "ViewState": "AgIAAIEAAAAAAAAAAAAEwKMAAAA1AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-17T21:07:06.443Z"
+              "WhenOpened": "2025-12-17T21:07:06.443Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
