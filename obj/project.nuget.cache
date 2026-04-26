@@ -1,13 +1,15 @@
 {
   "version": 2,
-  "dgSpecHash": "RYW+43h+ABM=",
+  "dgSpecHash": "OsQeP1s9AN0=",
   "success": true,
   "projectFilePath": "C:\\ApplicationControlService\\WPFAPP\\WPFAPP.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\alek7\\.nuget\\packages\\materialdesigncolors\\5.2.1\\materialdesigncolors.5.2.1.nupkg.sha512",
     "C:\\Users\\alek7\\.nuget\\packages\\materialdesignthemes\\5.2.0\\materialdesignthemes.5.2.0.nupkg.sha512",
     "C:\\Users\\alek7\\.nuget\\packages\\microsoft.xaml.behaviors.wpf\\1.1.39\\microsoft.xaml.behaviors.wpf.1.1.39.nupkg.sha512",
+    "C:\\Users\\alek7\\.nuget\\packages\\system.codedom\\10.0.7\\system.codedom.10.0.7.nupkg.sha512",
     "C:\\Users\\alek7\\.nuget\\packages\\system.diagnostics.eventlog\\10.0.1\\system.diagnostics.eventlog.10.0.1.nupkg.sha512",
+    "C:\\Users\\alek7\\.nuget\\packages\\system.management\\10.0.7\\system.management.10.0.7.nupkg.sha512",
     "C:\\Users\\alek7\\.nuget\\packages\\system.serviceprocess.servicecontroller\\10.0.1\\system.serviceprocess.servicecontroller.10.0.1.nupkg.sha512"
   ],
   "logs": []

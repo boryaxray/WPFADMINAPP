@@ -105,7 +105,7 @@ namespace WPFAPP.Pages
         //Добавление приложения в белый список
         private void AddAppBtn_Click(object sender, RoutedEventArgs e)
         {
-            try
+            /*try
             {
                 string filePath = Managers.WhiteListManager.SelectFile();
                 if (!string.IsNullOrEmpty(filePath))
@@ -157,6 +157,23 @@ namespace WPFAPP.Pages
 
                 AddAppBtn.Content = "Добавить приложение";
                 AddAppBtn.IsEnabled = true;
+            }*/
+            try
+            {
+                var pickerWindow = new ApplicationPickerWindow();
+                pickerWindow.Owner = Window.GetWindow(this);
+
+                if (pickerWindow.ShowDialog() == true)
+                {
+                    LoadWhiteList();
+                    MessageBox.Show("Выбранные приложения успешно добавлены в белый список",
+                        "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

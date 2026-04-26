@@ -10,11 +10,11 @@ none
 false
 TRACE;DEBUG;NET;NET8_0;NETCOREAPP;WINDOWS;WINDOWS7_0;NET5_0_OR_GREATER;NET6_0_OR_GREATER;NET7_0_OR_GREATER;NET8_0_OR_GREATER;NETCOREAPP3_0_OR_GREATER;NETCOREAPP3_1_OR_GREATER;WINDOWS7_0_OR_GREATER
 C:\ApplicationControlService\WPFAPP\App.xaml
-4490704064
+5-1397983484
 
-161396499879
-202133353327
-MainWindow.xaml;Pages\LogsPage.xaml;Pages\ServicePage.xaml;Pages\WhiteListPage.xaml;
+17-263093429
+203-1703134737
+MainWindow.xaml;Pages\ApplicationPickerWindow.xaml;Pages\LogsPage.xaml;Pages\ServicePage.xaml;Pages\WhiteListPage.xaml;
 
 False
 

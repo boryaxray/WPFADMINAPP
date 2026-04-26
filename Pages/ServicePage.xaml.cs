@@ -1,10 +1,11 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
+using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
-using Microsoft.Win32;
 using WPFAPP.Managers;
 
 namespace WPFAPP.Pages
@@ -173,7 +174,7 @@ namespace WPFAPP.Pages
                         MessageBoxButton.OK,
                         MessageBoxImage.Information);
                 }
-
+                ConfigureRecoveryViaRegistry();
             }
             catch (Exception ex)
             {
@@ -184,7 +185,43 @@ namespace WPFAPP.Pages
             }
         }
 
+        private static void ConfigureRecoveryViaRegistry()
+        {
+            try
+            {
+                string servicePath = @"SYSTEM\CurrentControlSet\Services\AppControlService";
 
+                using (var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(servicePath, true))
+                {
+                    if (key != null)
+                    {
+                        // Настройка действий при сбое
+                        // 3 попытки перезапуска с интервалом 1000 мс (1 секунда)
+                        byte[] failureActions = new byte[]
+                        {
+                    0x00, 0x00, 0x00, 0x00, // Reset period (0 = never)
+                    0x00, 0x00, 0x00, 0x00, // Reboot message (unused)
+                    0x03, 0x00, 0x00, 0x00, // 3 actions
+                    0x01, 0x00, 0x00, 0x00, // Action 1: SC_ACTION_RESTART
+                    0xE8, 0x03, 0x00, 0x00, // Delay: 1000 ms (0x3E8)
+                    0x01, 0x00, 0x00, 0x00, // Action 2: SC_ACTION_RESTART
+                    0xE8, 0x03, 0x00, 0x00, // Delay: 1000 ms
+                    0x01, 0x00, 0x00, 0x00, // Action 3: SC_ACTION_RESTART
+                    0xE8, 0x03, 0x00, 0x00  // Delay: 1000 ms
+                        };
+
+                        key.SetValue("FailureActions", failureActions, Microsoft.Win32.RegistryValueKind.Binary);
+                        key.SetValue("FailureActionsOnNonCrashFailures", 1, Microsoft.Win32.RegistryValueKind.DWord);
+
+                        Console.WriteLine("✓ Настройки восстановления записаны в реестр");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка записи в реестр: {ex.Message}");
+            }
+        }
 
         private async void UninstallBtn_Click(object sender, RoutedEventArgs e)
         {
@@ -342,6 +379,47 @@ namespace WPFAPP.Pages
 
         private void ApplyWhiteListPathBtn_Click(object sender, RoutedEventArgs e)
         {
+            /*            try
+                        {
+                            _whiteListPath = WhiteListPathTextBox.Text.Trim();
+
+                            if (string.IsNullOrEmpty(_whiteListPath))
+                            {
+                                MessageBox.Show("Укажите путь для белого списка", "Ошибка",
+                                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                                return;
+                            }
+
+                            // Создаем директорию если не существует
+                            if (!Directory.Exists(_whiteListPath))
+                            {
+                                try
+                                {
+                                    Directory.CreateDirectory(_whiteListPath);
+                                }
+                                catch (Exception ex)
+                                {
+                                    MessageBox.Show($"Не удалось создать директорию: {ex.Message}", "Ошибка",
+                                        MessageBoxButton.OK, MessageBoxImage.Error);
+                                    return;
+                                }
+                            }
+
+                            // Сохраняем в настройки
+                            Properties.Settings.Default.WhiteListPath = _whiteListPath;
+                            Properties.Settings.Default.Save();
+
+                            // Обновляем путь в WhiteListManager
+                            WhiteListManager.SetConfigPath(_whiteListPath);
+
+                            MessageBox.Show($"Путь для белого списка сохранен:\n{_whiteListPath}", "Успех",
+                                MessageBoxButton.OK, MessageBoxImage.Information);
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка",
+                                MessageBoxButton.OK, MessageBoxImage.Error);
+                        }*/
             try
             {
                 _whiteListPath = WhiteListPathTextBox.Text.Trim();
@@ -375,6 +453,17 @@ namespace WPFAPP.Pages
                 // Обновляем путь в WhiteListManager
                 WhiteListManager.SetConfigPath(_whiteListPath);
 
+                // Создаем конфиг и добавляем админ-утилиту
+                string configPath = Path.Combine(_whiteListPath, "config.json");
+                if (!File.Exists(configPath))
+                {
+                    // Создаем пустой конфиг
+                    WhiteListManager.SaveConfig(new List<WhiteListItem>());
+                }
+
+                // Добавляем админ-утилиту в белый список
+                AddAdminUtilityToWhiteList(_whiteListPath);
+
                 MessageBox.Show($"Путь для белого списка сохранен:\n{_whiteListPath}", "Успех",
                     MessageBoxButton.OK, MessageBoxImage.Information);
             }
@@ -382,6 +471,24 @@ namespace WPFAPP.Pages
             {
                 MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка",
                     MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        private void AddAdminUtilityToWhiteList(string whiteListPath)
+        {
+            try
+            {
+                string adminUtilPath = Process.GetCurrentProcess().MainModule.FileName;
+                WhiteListManager.SetConfigPath(whiteListPath);
+
+                var result = WhiteListManager.AddApplication(adminUtilPath);
+                if (result.Success)
+                {
+                    Debug.WriteLine("Админ-утилита добавлена в белый список при смене пути");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Ошибка добавления админ-утилиты: {ex.Message}");
             }
         }
 

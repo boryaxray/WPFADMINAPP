@@ -34,6 +34,14 @@
           }
         }
       },
+      "System.CodeDom/10.0.7": {
+        "runtime": {
+          "lib/net8.0/System.CodeDom.dll": {
+            "assemblyVersion": "10.0.0.0",
+            "fileVersion": "10.0.726.21808"
+          }
+        }
+      },
       "System.Diagnostics.EventLog/10.0.1": {
         "runtime": {
           "lib/net8.0/System.Diagnostics.EventLog.dll": {
@@ -53,6 +61,25 @@
             "assetType": "runtime",
             "assemblyVersion": "10.0.0.0",
             "fileVersion": "10.0.125.57005"
+          }
+        }
+      },
+      "System.Management/10.0.7": {
+        "dependencies": {
+          "System.CodeDom": "10.0.7"
+        },
+        "runtime": {
+          "lib/net8.0/System.Management.dll": {
+            "assemblyVersion": "10.0.0.7",
+            "fileVersion": "10.0.726.21808"
+          }
+        },
+        "runtimeTargets": {
+          "runtimes/win/lib/net8.0/System.Management.dll": {
+            "rid": "win",
+            "assetType": "runtime",
+            "assemblyVersion": "10.0.0.7",
+            "fileVersion": "10.0.726.21808"
           }
         }
       },
@@ -99,12 +126,26 @@
       "path": "microsoft.xaml.behaviors.wpf/1.1.39",
       "hashPath": "microsoft.xaml.behaviors.wpf.1.1.39.nupkg.sha512"
     },
+    "System.CodeDom/10.0.7": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-bwKU+E9lAt6wRDtSdPnmcnKEev5hpUrQOPBIOVYXfN69GQPYJv9IxeifiBOm53QzYmARUjEKNwPlFALE9Ab53Q==",
+      "path": "system.codedom/10.0.7",
+      "hashPath": "system.codedom.10.0.7.nupkg.sha512"
+    },
     "System.Diagnostics.EventLog/10.0.1": {
       "type": "package",
       "serviceable": true,
       "sha512": "sha512-xfaHEHVDkMOOZR5S6ZGezD0+vekdH1Nx/9Ih8/rOqOGSOk1fxiN3u94bYkBW/wigj0Uw2Wt3vvRj9mtYdgwEjw==",
       "path": "system.diagnostics.eventlog/10.0.1",
       "hashPath": "system.diagnostics.eventlog.10.0.1.nupkg.sha512"
+    },
+    "System.Management/10.0.7": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-urkYf/JYCGUSF7+95BF2yM5E+QwnpR1Sf23vBw/niZfNbIkxvwYgRV0eoOq5wmz44JLEZ2Jojxa6nvgkrPVGfg==",
+      "path": "system.management/10.0.7",
+      "hashPath": "system.management.10.0.7.nupkg.sha512"
     },
     "System.ServiceProcess.ServiceController/10.0.1": {
       "type": "package",

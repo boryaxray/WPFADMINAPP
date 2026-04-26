@@ -103,7 +103,7 @@ namespace WPFAPP.Pages {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/WPFAPP;V1.0.0.0;component/pages/whitelistpage.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/WPFAPP;component/pages/whitelistpage.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\Pages\WhiteListPage.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

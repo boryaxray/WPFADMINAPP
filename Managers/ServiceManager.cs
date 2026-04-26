@@ -144,7 +144,7 @@ namespace WPFAPP.Managers
                 // Команда для настройки восстановления при сбоях
                 // reset= 0 - счетчик сбоев никогда не сбрасывается
                 // actions= restart/5000/restart/5000/restart/5000 - 3 попытки перезапуска через 5 секунд
-                string recoveryCommand = $"failure AppControlService reset= 0 actions= restart/5000/restart/5000/restart/5000";
+                string recoveryCommand = $"failure AppControlService reset= 86400 actions= restart/5000/restart/5000/restart/5000";
 
                 RunSCCommand(recoveryCommand, "настройка восстановления");
 

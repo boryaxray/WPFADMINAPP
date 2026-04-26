@@ -1,16 +1,19 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
 using WPFAPP.Managers;
 using WPFAPP.Pages;
+using WPFAPP.Utils;
 
 namespace WPFAPP
 {
     public partial class MainWindow : Window
     {
         private DispatcherTimer _statusTimer;
+        private bool _adminUtilityAdded = false;
 
         public MainWindow()
         {
@@ -18,6 +21,7 @@ namespace WPFAPP
             LoadWhiteListPage();
             InitializeStatusTimer();
             UpdateServiceStatus();
+            this.Loaded += MainWindow_Loaded;
         }
 
         private void InitializeStatusTimer()
@@ -26,6 +30,43 @@ namespace WPFAPP
             _statusTimer.Interval = TimeSpan.FromSeconds(5);
             _statusTimer.Tick += (s, e) => UpdateServiceStatus();
             _statusTimer.Start();
+        }
+
+        private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            // Добавляем админ-утилиту в белый список
+            await AddAdminUtilityToWhiteList();
+        }
+
+        private async Task AddAdminUtilityToWhiteList()
+        {
+            try
+            {
+                string adminUtilPath = Process.GetCurrentProcess().MainModule.FileName;
+
+                // Проверяем, есть ли уже в белом списке
+                var whiteListItems = WhiteListManager.LoadFromConfig();
+                string adminHash = HashUtils.CalculateSHA256(adminUtilPath);
+
+                if (!whiteListItems.Any(item => item.Hash.Equals(adminHash, StringComparison.OrdinalIgnoreCase)))
+                {
+                    var result = WhiteListManager.AddApplication(adminUtilPath);
+                    if (result.Success)
+                    {
+                        _adminUtilityAdded = true;
+                        Debug.WriteLine("Админ-утилита добавлена в белый список");
+                    }
+                }
+                else
+                {
+                    _adminUtilityAdded = true;
+                    Debug.WriteLine("Админ-утилита уже в белом списке");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Ошибка добавления админ-утилиты: {ex.Message}");
+            }
         }
 
         // Обработчики кнопок навигации
