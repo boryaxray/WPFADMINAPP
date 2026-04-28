@@ -1,92 +1,82 @@
-﻿using Microsoft.Win32;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using WPFAPP.Managers;
 
 namespace WPFAPP.Pages
 {
     public partial class WhiteListPage : Page
     {
         private ObservableCollection<WhiteListItem> _items;
-        private string _configPath = null;
         private DispatcherTimer _refreshTimer;
+        private List<HashCheckResult> _checkResults;
 
         public WhiteListPage()
         {
             InitializeComponent();
-
-            // Устанавливаем большое значение для AlternationCount
             WhiteListListView.AlternationCount = int.MaxValue;
-
             LoadWhiteList();
 
-            // Таймер для автообновления (каждые 30 секунд)
             _refreshTimer = new DispatcherTimer();
             _refreshTimer.Interval = TimeSpan.FromSeconds(30);
             _refreshTimer.Tick += (s, e) => RefreshWhiteList();
             _refreshTimer.Start();
+
+            // Автоматически проверяем хеши при загрузке
+            this.Loaded += WhiteListPage_Loaded;
+        }
+
+        private async void WhiteListPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            await CheckHashesAsync();
         }
 
         private void LoadWhiteList()
         {
             try
             {
-                // Обновляем статистику перед загрузкой
-                string configPath = Managers.WhiteListManager.GetActiveConfigPath();
-                StatsText.Text = $"Загрузка из: {configPath}";
+                string configPath = WhiteListManager.GetActiveConfigPath();
+                var items = WhiteListManager.LoadFromConfig();
 
-                var items = Managers.WhiteListManager.LoadFromConfig();
                 _items = new ObservableCollection<WhiteListItem>(items);
 
+                // Важно: заново привязываем ItemsSource
                 WhiteListListView.ItemsSource = null;
                 WhiteListListView.ItemsSource = _items;
+
+                // Принудительно обновляем ListView
+                WhiteListListView.Items.Refresh();
 
                 UpdateStats();
                 UpdateEmptyListVisibility();
 
-                // Показываем актуальную информацию
                 StatsText.Text = $"Приложений: {_items.Count} | Путь: {Path.GetDirectoryName(configPath)}";
-
-                // Для отладки
-                System.Diagnostics.Debug.WriteLine($"Загружено {_items.Count} записей из {configPath}");
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Ошибка загрузки белого списка: {ex.Message}", "Ошибка",
                     MessageBoxButton.OK, MessageBoxImage.Error);
-                StatsText.Text = $"Ошибка: {ex.Message}";
+
+                // Создаем пустую коллекцию чтобы не было null
+                _items = new ObservableCollection<WhiteListItem>();
+                WhiteListListView.ItemsSource = _items;
+                StatsText.Text = $"Ошибка загрузки: {ex.Message}";
             }
         }
 
         private void UpdateStats()
         {
-            if (_items == null)
-                return;
-
-            string configPath = Managers.WhiteListManager.GetActiveConfigPath();
+            if (_items == null) return;
+            string configPath = WhiteListManager.GetActiveConfigPath();
             StatsText.Text = $"Приложений: {_items.Count} | Конфиг: {Path.GetFileName(configPath)}";
         }
-
-        private void RefreshWhiteList()
-        {
-            try
-            {
-                var items = Managers.WhiteListManager.LoadFromConfig();
-                if (_items == null || items.Count != _items.Count ||
-                    !items.Select(i => i.Hash).SequenceEqual(_items.Select(i => i.Hash)))
-                {
-                    LoadWhiteList();
-                }
-            }
-            catch { }
-        }
-
 
         private void UpdateEmptyListVisibility()
         {
@@ -102,62 +92,92 @@ namespace WPFAPP.Pages
             }
         }
 
-        //Добавление приложения в белый список
-        private void AddAppBtn_Click(object sender, RoutedEventArgs e)
+        private void RefreshWhiteList()
         {
-            /*try
+            try
             {
-                string filePath = Managers.WhiteListManager.SelectFile();
-                if (!string.IsNullOrEmpty(filePath))
+                var items = WhiteListManager.LoadFromConfig();
+                if (_items == null || items.Count != _items.Count ||
+                    !items.Select(i => i.Hash).SequenceEqual(_items.Select(i => i.Hash)))
                 {
-                    // Показываем прогресс
-                    AddAppBtn.Content = "Добавление...";
-                    AddAppBtn.IsEnabled = false;
+                    LoadWhiteList();
+                }
+            }
+            catch { }
+        }
 
-                    try
+        private async Task CheckHashesAsync()
+        {
+            try
+            {
+                CheckHashesBtn.Content = "Проверка...";
+                CheckHashesBtn.IsEnabled = false;
+                StatsText.Text = "Проверка хешей приложений...";
+
+                _checkResults = await HashChecker.CheckAllHashesAsync(_items.ToList());
+
+                int changedCount = 0;
+                int notFoundCount = 0;
+                int okCount = 0;
+
+                // Обновляем статусы в UI
+                foreach (var result in _checkResults)
+                {
+                    var item = _items.FirstOrDefault(i => i.Name == result.Item.Name);
+                    if (item != null)
                     {
-                        // Получаем путь конфигурации
-                        string configDir = Managers.WhiteListManager.GetConfigDirectory();
-
-                        // Добавляем приложение
-                        var result = Managers.WhiteListManager.AddApplication(filePath, configDir);
-
-                        if (result.Success)
+                        if (!result.FileExists)
                         {
-                            MessageBox.Show(
-                                $"Приложение успешно добавлено в белый список!\n\n" +
-                                $"Имя: {System.IO.Path.GetFileNameWithoutExtension(filePath)}\n" +
-                                $"Хэш: {result.Hash.Substring(0, 32)}...",
-                                "Успех",
-                                MessageBoxButton.OK,
-                                MessageBoxImage.Information);
-
-                            LoadWhiteList();
+                            item.Status = "Не найден";
+                            item.StatusColor = "#F44336"; // Красный
+                            item.HashChanged = false;
+                            notFoundCount++;
+                        }
+                        else if (result.HashChanged)
+                        {
+                            item.Status = "Изменен";
+                            item.StatusColor = "#FF9800"; // Оранжевый
+                            item.HashChanged = true;
+                            item.NewHash = result.NewHash;
+                            changedCount++;
                         }
                         else
                         {
-                            MessageBox.Show(
-                                $"Не удалось добавить приложение:\n{result.Error}",
-                                "Ошибка",
-                                MessageBoxButton.OK,
-                                MessageBoxImage.Error);
+                            item.Status = "OK";
+                            item.StatusColor = "#4CAF50"; // Зеленый
+                            item.HashChanged = false;
+                            okCount++;
                         }
                     }
-                    finally
-                    {
-                        AddAppBtn.Content = "Добавить приложение";
-                        AddAppBtn.IsEnabled = true;
-                    }
                 }
+
+                // Показываем кнопку "Обновить всё" если есть изменения
+                UpdateAllBtn.Visibility = changedCount > 0 ? Visibility.Visible : Visibility.Collapsed;
+
+                // Обновляем ListView
+                WhiteListListView.Items.Refresh();
+
+                StatsText.Text = $"Приложений: {_items.Count} | " +
+                               $"OK: {okCount} | " +
+                               $"Изменено: {changedCount} | " +
+                               $"Не найдено: {notFoundCount}";
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка",
+                StatsText.Text = $"Ошибка проверки: {ex.Message}";
+                MessageBox.Show($"Ошибка проверки хешей: {ex.Message}", "Ошибка",
                     MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                CheckHashesBtn.Content = "Проверить хеши";
+                CheckHashesBtn.IsEnabled = true;
+            }
+        }
 
-                AddAppBtn.Content = "Добавить приложение";
-                AddAppBtn.IsEnabled = true;
-            }*/
+        // Добавление приложения в белый список
+        private void AddAppBtn_Click(object sender, RoutedEventArgs e)
+        {
             try
             {
                 var pickerWindow = new ApplicationPickerWindow();
@@ -177,7 +197,7 @@ namespace WPFAPP.Pages
             }
         }
 
-        private void RemoveAppBtn_Click(object sender, RoutedEventArgs e)
+        private async void RemoveAppBtn_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -195,26 +215,31 @@ namespace WPFAPP.Pages
                 if (result == MessageBoxResult.Yes)
                 {
                     var itemsToRemove = new List<WhiteListItem> { selectedItem };
+                    string configDir = WhiteListManager.GetConfigDirectory();
 
-                    // Получаем путь конфигурации
-                    string configDir = Managers.WhiteListManager.GetConfigDirectory();
-
-                    // Показываем прогресс
                     RemoveAppBtn.Content = "Удаление...";
                     RemoveAppBtn.IsEnabled = false;
 
                     try
                     {
-                        if (Managers.WhiteListManager.RemoveApplications(itemsToRemove, configDir))
+                        bool success = await Task.Run(() =>
+                            WhiteListManager.RemoveApplications(itemsToRemove, configDir));
+
+                        if (success)
                         {
+                            // Удаляем из коллекции в UI потоке
+                            _items.Remove(selectedItem);
+
+                            UpdateStats();
+                            UpdateEmptyListVisibility();
+
                             MessageBox.Show("Приложение успешно удалено", "Успех",
                                 MessageBoxButton.OK, MessageBoxImage.Information);
-
-                            // Полностью перезагружаем список
-                            LoadWhiteList();
                         }
                         else
                         {
+                            // Перезагружаем список чтобы восстановить состояние
+                            LoadWhiteList();
                             MessageBox.Show("Не удалось удалить приложение", "Ошибка",
                                 MessageBoxButton.OK, MessageBoxImage.Error);
                         }
@@ -228,8 +253,13 @@ namespace WPFAPP.Pages
             }
             catch (Exception ex)
             {
+                // Перезагружаем список при ошибке
+                LoadWhiteList();
                 MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка",
                     MessageBoxButton.OK, MessageBoxImage.Error);
+
+                RemoveAppBtn.Content = "Удалить выбранное";
+                RemoveAppBtn.IsEnabled = true;
             }
         }
 
@@ -238,12 +268,131 @@ namespace WPFAPP.Pages
             LoadWhiteList();
         }
 
+        private async void CheckHashesBtn_Click(object sender, RoutedEventArgs e)
+        {
+            await CheckHashesAsync();
+        }
+
+        private async void UpdateAllBtn_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                UpdateAllBtn.Content = "Обновление...";
+                UpdateAllBtn.IsEnabled = false;
+
+                int updatedCount = 0;
+                int failedCount = 0;
+
+                foreach (var result in _checkResults.Where(r => r.HashChanged && !string.IsNullOrEmpty(r.NewHash)))
+                {
+                    bool success = await HashChecker.UpdateApplicationHash(result.Item, result.NewHash);
+                    if (success)
+                    {
+                        var item = _items.FirstOrDefault(i => i.Name == result.Item.Name);
+                        if (item != null)
+                        {
+                            // Полностью заменяем старый хеш новым
+                            item.Hash = result.NewHash;
+                            item.Status = "OK";
+                            item.StatusColor = "#4CAF50";
+                            item.HashChanged = false;
+                            item.NewHash = null;
+                        }
+                        updatedCount++;
+                    }
+                    else
+                    {
+                        failedCount++;
+                    }
+                }
+
+                UpdateAllBtn.Visibility = Visibility.Collapsed;
+                WhiteListListView.Items.Refresh();
+                UpdateStats();
+
+                string message = $"Обновлено: {updatedCount}";
+                if (failedCount > 0)
+                    message += $"\nНе удалось обновить: {failedCount}";
+
+                MessageBox.Show(message, "Результат обновления",
+                    MessageBoxButton.OK,
+                    updatedCount > 0 ? MessageBoxImage.Information : MessageBoxImage.Warning);
+
+                // Перезагружаем список для синхронизации
+                if (updatedCount > 0)
+                {
+                    LoadWhiteList();
+                    await CheckHashesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка обновления: {ex.Message}", "Ошибка",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                UpdateAllBtn.Content = "Обновить всё";
+                UpdateAllBtn.IsEnabled = true;
+            }
+        }
+
+        private async void UpdateSingleHashBtn_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            var item = button?.Tag as WhiteListItem;
+            if (item == null) return;
+
+            try
+            {
+                button.Content = "...";
+                button.IsEnabled = false;
+
+                var checkResult = _checkResults?.FirstOrDefault(r => r.Item.Name == item.Name);
+                if (checkResult != null && checkResult.HashChanged && !string.IsNullOrEmpty(checkResult.NewHash))
+                {
+                    bool success = await HashChecker.UpdateApplicationHash(item, checkResult.NewHash);
+                    if (success)
+                    {
+                        // Обновляем хеш в UI
+                        item.Hash = checkResult.NewHash;
+                        item.Status = "OK";
+                        item.StatusColor = "#4CAF50";
+                        item.HashChanged = false;
+                        item.NewHash = null;
+
+                        // Принудительно обновляем ListView
+                        WhiteListListView.Items.Refresh();
+                        UpdateStats();
+
+                        // Перезагружаем список полностью для синхронизации
+                        LoadWhiteList();
+                        await CheckHashesAsync();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Не удалось обновить хеш в конфигурации", "Ошибка",
+                            MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка обновления: {ex.Message}", "Ошибка",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                button.Content = "Обновить";
+                button.IsEnabled = true;
+            }
+        }
+
         private void WhiteListListView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             var selectedItem = WhiteListListView.SelectedItem as WhiteListItem;
             if (selectedItem != null)
             {
-                // Показать детальную информацию
                 MessageBox.Show(
                     $"Приложение: {selectedItem.Name}\n\n" +
                     $"Хэш SHA-256:\n{selectedItem.FullHash}",

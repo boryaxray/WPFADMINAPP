@@ -1,29 +1,88 @@
-﻿using System.Linq;
+﻿using System.ComponentModel;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 
 namespace WPFAPP.Pages
 {
     [DataContract]
-    public class WhiteListItem
+    public class WhiteListItem : INotifyPropertyChanged
     {
+        private string _name;
+        private string _hash;
+        private bool _isSelected;
+        private string _status;
+        private string _statusColor;
+        private bool _hashChanged;
+        private string _newHash;
+
         [DataMember(Name = "Name")]
-        public string Name { get; set; } = string.Empty;
+        public string Name
+        {
+            get => _name;
+            set { _name = value; OnPropertyChanged(); }
+        }
 
         [DataMember(Name = "Hash")]
-        public string Hash { get; set; } = string.Empty;
+        public string Hash
+        {
+            get => _hash;
+            set { _hash = value; OnPropertyChanged(); OnPropertyChanged(nameof(FullHash)); }
+        }
 
         [IgnoreDataMember]
-        public bool IsSelected { get; set; }
+        public bool IsSelected
+        {
+            get => _isSelected;
+            set { _isSelected = value; OnPropertyChanged(); }
+        }
 
-        public WhiteListItem() { }
+        [IgnoreDataMember]
+        public string Status
+        {
+            get => _status;
+            set { _status = value; OnPropertyChanged(); }
+        }
+
+        [IgnoreDataMember]
+        public string StatusColor
+        {
+            get => _statusColor;
+            set { _statusColor = value; OnPropertyChanged(); }
+        }
+
+        [IgnoreDataMember]
+        public bool HashChanged
+        {
+            get => _hashChanged;
+            set { _hashChanged = value; OnPropertyChanged(); }
+        }
+
+        [IgnoreDataMember]
+        public string NewHash
+        {
+            get => _newHash;
+            set { _newHash = value; OnPropertyChanged(); }
+        }
+
+        [IgnoreDataMember]
+        public string FullHash => Hash;
+
+        public WhiteListItem()
+        {
+            _name = string.Empty;
+            _hash = string.Empty;
+            _status = string.Empty;
+            _statusColor = "Transparent";
+        }
 
         public WhiteListItem(string name, string hash)
         {
-            Name = name;
-            Hash = hash;
+            _name = name;
+            _hash = hash;
+            _status = string.Empty;
+            _statusColor = "Transparent";
         }
-
-        public string FullHash => Hash;
 
         public override string ToString()
         {
@@ -50,6 +109,13 @@ namespace WPFAPP.Pages
             }
 
             return true;
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

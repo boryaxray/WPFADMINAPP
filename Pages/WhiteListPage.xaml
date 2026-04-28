@@ -6,6 +6,8 @@
       Background="Transparent">
 
     <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+
         <Style x:Key="CardStyle" TargetType="Border">
             <Setter Property="Background" Value="White"/>
             <Setter Property="CornerRadius" Value="4"/>
@@ -30,6 +32,9 @@
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter Property="Background" Value="#5E35B1"/>
                 </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Background" Value="#9E9E9E"/>
+                </Trigger>
             </Style.Triggers>
         </Style>
 
@@ -48,7 +53,6 @@
             </Style.Triggers>
         </Style>
 
-        <!-- Стиль для строк списка -->
         <Style x:Key="ListItemStyle" TargetType="ListViewItem">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -94,11 +98,12 @@
                            Margin="0,0,0,20"/>
 
                 <!-- Кнопки управления -->
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                <WrapPanel Margin="0,0,0,20">
                     <Button x:Name="AddAppBtn" 
                             Style="{StaticResource PrimaryButton}"
                             Width="180"
                             Height="40"
+                            Margin="0,0,10,5"
                             Click="AddAppBtn_Click">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="PlusCircle" Width="20" Height="20" Margin="0,0,8,0"/>
@@ -110,24 +115,51 @@
                             Style="{StaticResource WarningButton}"
                             Width="180"
                             Height="40"
-                            Margin="10,0,0,0"
+                            Margin="0,0,10,5"
                             Click="RemoveAppBtn_Click">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="Delete" Width="20" Height="20" Margin="0,0,8,0"/>
                             <TextBlock Text="Удалить выбранное"/>
                         </StackPanel>
                     </Button>
+
                     <Button x:Name="RefreshBtn"  
-                      Style="{StaticResource PrimaryButton}"
-                      Width="50"
-                      Height="40"
-                      Margin="10,0,0,0"
-                      ToolTip="Обновить список"
-                      Click="RefreshBtn_Click">
+                            Style="{StaticResource PrimaryButton}"
+                            Width="50"
+                            Height="40"
+                            Margin="0,0,10,5"
+                            ToolTip="Обновить список"
+                            Click="RefreshBtn_Click">
                         <materialDesign:PackIcon Kind="Refresh" Width="20" Height="20"/>
                     </Button>
 
-                </StackPanel>
+                    <Button x:Name="CheckHashesBtn" 
+                            Style="{StaticResource PrimaryButton}"
+                            Width="180"
+                            Height="40"
+                            Margin="0,0,10,5"
+                            Background="#2196F3"
+                            Click="CheckHashesBtn_Click">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="ShieldSearch" Width="20" Height="20" Margin="0,0,8,0"/>
+                            <TextBlock Text="Проверить хеши"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button x:Name="UpdateAllBtn" 
+                            Style="{StaticResource PrimaryButton}"
+                            Width="180"
+                            Height="40"
+                            Margin="0,0,10,5"
+                            Background="#4CAF50"
+                            Click="UpdateAllBtn_Click"
+                            Visibility="Collapsed">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="Update" Width="20" Height="20" Margin="0,0,8,0"/>
+                            <TextBlock Text="Обновить всё"/>
+                        </StackPanel>
+                    </Button>
+                </WrapPanel>
 
                 <!-- Статистика -->
                 <Border Background="#F5F5F5" 
@@ -167,9 +199,10 @@
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="40"/>
-                            <ColumnDefinition Width="1*"/>
-                            <ColumnDefinition Width="2*"/>
-                            <ColumnDefinition Width="3*"/>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="80"/>
+                            <ColumnDefinition Width="100"/>
                         </Grid.ColumnDefinitions>
 
                         <TextBlock Grid.Column="0"
@@ -187,7 +220,17 @@
                                    Text="Хэш SHA-256"
                                    FontWeight="SemiBold"
                                    Foreground="#666666"/>
-                        
+
+                        <TextBlock Grid.Column="3"
+                                   Text="Статус"
+                                   FontWeight="SemiBold"
+                                   Foreground="#666666"
+                                   HorizontalAlignment="Center"/>
+
+                        <TextBlock Grid.Column="4"
+                                   Text=""
+                                   FontWeight="SemiBold"
+                                   Foreground="#666666"/>
                     </Grid>
                 </Border>
 
@@ -203,8 +246,10 @@
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="40"/>
-                                    <ColumnDefinition Width="1*"/>
-                                    <ColumnDefinition Width="2*"/>
+                                    <ColumnDefinition Width="150"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="80"/>
+                                    <ColumnDefinition Width="100"/>
                                 </Grid.ColumnDefinitions>
 
                                 <!-- Номер -->
@@ -219,24 +264,54 @@
                                            Foreground="#666666"/>
 
                                 <!-- Название -->
-                                <TextBlock Grid.Column="1"
-                                           Text="{Binding Name}" 
-                                           Padding="10,8"
-                                           VerticalAlignment="Center"
-                                           FontSize="13"
-                                           FontWeight="Medium"
-                                           TextTrimming="CharacterEllipsis"/>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Name}" 
+                                               Padding="5,3"
+                                               FontSize="13"
+                                               FontWeight="Medium"
+                                               TextTrimming="CharacterEllipsis"/>
+                                </StackPanel>
 
-                                <!-- Полный хэш (с переносами) -->
+                                <!-- Хэш -->
                                 <TextBlock Grid.Column="2"
                                            Text="{Binding FullHash}" 
-                                           Padding="10,8"
+                                           Padding="5,3"
                                            VerticalAlignment="Center"
                                            FontFamily="Consolas"
                                            FontSize="10"
                                            Foreground="#666666"
                                            TextWrapping="Wrap"/>
-                              
+
+                                <!-- Статус -->
+                                <StackPanel Grid.Column="3" 
+                                            VerticalAlignment="Center" 
+                                            HorizontalAlignment="Center">
+                                    <Border CornerRadius="10" 
+                                            Padding="8,3"
+                                            Background="{Binding StatusColor}">
+                                        <TextBlock Text="{Binding Status}" 
+                                                   FontSize="11"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="White"
+                                                   HorizontalAlignment="Center"/>
+                                    </Border>
+                                </StackPanel>
+
+                                <!-- Кнопка обновления -->
+                                <Button Grid.Column="4" 
+                                        Content="Обновить" 
+                                        Height="28"
+                                        FontSize="11"
+                                        Padding="8,3"
+                                        Background="#FF9800"
+                                        Foreground="White"
+                                        BorderThickness="0"
+                                        Cursor="Hand"
+                                        Click="UpdateSingleHashBtn_Click"
+                                        Tag="{Binding}"
+                                        Visibility="{Binding HashChanged, Converter={StaticResource BoolToVisibilityConverter}}"
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Center"/>
                             </Grid>
                         </DataTemplate>
                     </ListView.ItemTemplate>

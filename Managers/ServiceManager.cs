@@ -406,6 +406,120 @@ namespace WPFAPP.Managers
             return Path.Combine(appDir, "ApplicationControlService.exe");
         }
 
-      
+
+
+
+
+        public static bool StopServiceWithAuth(string password)
+        {
+            try
+            {
+                // Проверяем пароль (должен быть настроен администратором)
+                if (!ValidateAdminPassword(password))
+                {
+                    throw new Exception("Неверный пароль администратора");
+                }
+
+                // Разрешаем остановку службы
+                AllowServiceStop();
+
+                // Останавливаем службу
+                using (Process process = new Process())
+                {
+                    process.StartInfo.FileName = "sc.exe";
+                    process.StartInfo.Arguments = "stop AppControlService";
+                    process.StartInfo.UseShellExecute = false;
+                    process.StartInfo.CreateNoWindow = true;
+                    process.StartInfo.RedirectStandardOutput = true;
+                    process.StartInfo.Verb = "runas";
+
+                    process.Start();
+                    string output = process.StandardOutput.ReadToEnd();
+                    process.WaitForExit(10000);
+
+                    return process.ExitCode == 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Ошибка остановки службы: {ex.Message}");
+            }
+            finally
+            {
+                // Запрещаем остановку
+                DenyServiceStop();
+            }
+        }
+
+        private static bool ValidateAdminPassword(string password)
+        {
+            // Получаем сохраненный хеш пароля
+            string savedHash = Properties.Settings.Default.AdminPasswordHash;
+
+            if (string.IsNullOrEmpty(savedHash))
+            {
+                // Первый запуск - сохраняем пароль
+                string newHash = ComputeHash(password);
+                Properties.Settings.Default.AdminPasswordHash = newHash;
+                Properties.Settings.Default.Save();
+                return true;
+            }
+
+            // Проверяем пароль
+            string inputHash = ComputeHash(password);
+            return inputHash == savedHash;
+        }
+
+        private static string ComputeHash(string input)
+        {
+            using (var sha256 = System.Security.Cryptography.SHA256.Create())
+            {
+                byte[] bytes = System.Text.Encoding.UTF8.GetBytes(input + "AppControlSalt123");
+                byte[] hash = sha256.ComputeHash(bytes);
+                return BitConverter.ToString(hash).Replace("-", "").ToLower();
+            }
+        }
+
+        // Установка пароля администратора
+        public static bool SetAdminPassword(string newPassword)
+        {
+            try
+            {
+                string hash = ComputeHash(newPassword);
+                Properties.Settings.Default.AdminPasswordHash = hash;
+                Properties.Settings.Default.Save();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static void AllowServiceStop()
+        {
+            try
+            {
+                // Отправляем сигнал службе разрешить остановку
+                using (var sc = new ServiceController("AppControlService"))
+                {
+                    sc.ExecuteCommand(128); // Пользовательская команда 128
+                }
+            }
+            catch { }
+        }
+
+        private static void DenyServiceStop()
+        {
+            try
+            {
+                using (var sc = new ServiceController("AppControlService"))
+                {
+                    sc.ExecuteCommand(129); // Пользовательская команда 129
+                }
+            }
+            catch { }
+        }
+
     }
 }

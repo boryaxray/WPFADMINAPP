@@ -34,10 +34,8 @@ namespace WPFAPP.Managers
         {
             try
             {
-                // ВСЕГДА берем путь из настроек админ-утилиты
                 string path = Properties.Settings.Default.WhiteListPath;
 
-                // Если путь не указан в настройках, используем путь по умолчанию
                 if (string.IsNullOrEmpty(path))
                 {
                     path = @"C:\ProgramData\AppControl\WhiteList";
@@ -45,7 +43,6 @@ namespace WPFAPP.Managers
                     Properties.Settings.Default.Save();
                 }
 
-                // Создаем директорию если не существует
                 if (!Directory.Exists(path))
                 {
                     Directory.CreateDirectory(path);
@@ -58,6 +55,7 @@ namespace WPFAPP.Managers
                 return @"C:\ProgramData\AppControl\WhiteList";
             }
         }
+
         public static void SetConfigPath(string path)
         {
             try
@@ -66,8 +64,6 @@ namespace WPFAPP.Managers
                 {
                     Properties.Settings.Default.WhiteListPath = path;
                     Properties.Settings.Default.Save();
-
-                    // Сбрасываем кэшированный путь
                     _configPath = null;
                 }
             }
@@ -76,7 +72,6 @@ namespace WPFAPP.Managers
 
         public static string GetActiveConfigPath()
         {
-            // Просто комбинируем директорию с именем файла
             string configDir = GetConfigDirectory();
             return Path.Combine(configDir, "config.json");
         }
@@ -96,10 +91,7 @@ namespace WPFAPP.Managers
                     return new List<WhiteListItem>();
                 }
 
-                // Читаем файл
                 string json = File.ReadAllText(configPath, Encoding.UTF8);
-
-                // Убираем BOM если есть
                 json = json.Trim(new char[] { '\uFEFF', '\u200B' }).Trim();
 
                 if (string.IsNullOrEmpty(json) || json == "[]" || json == "{}")
@@ -108,7 +100,6 @@ namespace WPFAPP.Managers
                     return new List<WhiteListItem>();
                 }
 
-                // Парсим с DataContractJsonSerializer
                 using (MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(json)))
                 {
                     DataContractJsonSerializer serializer = new DataContractJsonSerializer(
@@ -121,8 +112,6 @@ namespace WPFAPP.Managers
                     );
 
                     var items = (List<WhiteListItem>)serializer.ReadObject(ms) ?? new List<WhiteListItem>();
-
-                    // Проверяем валидность
                     var validItems = items.Where(item => item.IsValid()).ToList();
 
                     WriteDebug($"Загружено {validItems.Count} валидных записей из {items.Count} всего");
@@ -145,7 +134,6 @@ namespace WPFAPP.Managers
 
                 WriteDebug($"Сохраняем конфиг в: {configPath}");
 
-                // Создаем директорию если не существует
                 string configDir = Path.GetDirectoryName(configPath);
                 if (!Directory.Exists(configDir))
                 {
@@ -153,7 +141,6 @@ namespace WPFAPP.Managers
                     WriteDebug($"Создана директория: {configDir}");
                 }
 
-                // Сериализуем с DataContractJsonSerializer
                 using (MemoryStream ms = new MemoryStream())
                 {
                     DataContractJsonSerializer serializer = new DataContractJsonSerializer(
@@ -168,13 +155,9 @@ namespace WPFAPP.Managers
                     serializer.WriteObject(ms, items);
                     ms.Position = 0;
 
-                    // Преобразуем в читаемый JSON
                     string json = Encoding.UTF8.GetString(ms.ToArray());
-
-                    // Простое форматирование
                     json = FormatJson(json);
 
-                    // Сохраняем без BOM
                     File.WriteAllText(configPath, json, new UTF8Encoding(false));
 
                     WriteDebug($"Сохранено {items.Count} записей");
@@ -190,10 +173,8 @@ namespace WPFAPP.Managers
 
         private static void WriteDebug(string message)
         {
-            // Для отладки можно записывать в файл или использовать Debug.WriteLine
             System.Diagnostics.Debug.WriteLine($"[WhiteListManager] {DateTime.Now:HH:mm:ss} {message}");
 
-            // Или записывать в лог-файл админ-утилиты
             try
             {
                 string logPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
@@ -212,7 +193,6 @@ namespace WPFAPP.Managers
         {
             try
             {
-                // Простейшее форматирование
                 json = json.Replace("{\"", "{\n  \"")
                           .Replace(",\"", ",\n  \"")
                           .Replace("}]", "}\n]")
@@ -225,20 +205,17 @@ namespace WPFAPP.Managers
             }
         }
 
-
         public static AddApplicationResult AddApplication(string filePath, string configDir = null)
         {
             var result = new AddApplicationResult();
 
             try
             {
-                // Устанавливаем путь если указан
                 if (!string.IsNullOrEmpty(configDir))
                 {
                     SetConfigPath(configDir);
                 }
 
-                // 1. Проверяем существование файла
                 if (!File.Exists(filePath))
                 {
                     result.Error = "Файл не существует";
@@ -246,7 +223,6 @@ namespace WPFAPP.Managers
                     return result;
                 }
 
-                // 2. Проверяем, не системный ли файл
                 if (HashUtils.IsSystemFile(filePath))
                 {
                     result.Error = "Нельзя добавлять системные файлы в белый список";
@@ -254,7 +230,6 @@ namespace WPFAPP.Managers
                     return result;
                 }
 
-                // 3. Вычисляем хэш
                 result.Hash = HashUtils.CalculateSHA256(filePath);
 
                 if (string.IsNullOrEmpty(result.Hash))
@@ -264,7 +239,6 @@ namespace WPFAPP.Managers
                     return result;
                 }
 
-                // 4. Проверяем формат хэша
                 if (!HashUtils.ValidateHash(result.Hash))
                 {
                     result.Error = $"Некорректный формат хэша (длина: {result.Hash.Length})";
@@ -272,10 +246,8 @@ namespace WPFAPP.Managers
                     return result;
                 }
 
-                // 5. Загружаем текущий конфиг
                 var currentItems = LoadFromConfig();
 
-                // 6. Проверяем, нет ли уже этого хэша
                 if (currentItems.Any(item => item.Hash.Equals(result.Hash, StringComparison.OrdinalIgnoreCase)))
                 {
                     result.Error = "Приложение уже находится в белом списке";
@@ -283,7 +255,6 @@ namespace WPFAPP.Managers
                     return result;
                 }
 
-                // 7. Добавляем новое приложение
                 string appName = Path.GetFileNameWithoutExtension(filePath);
                 if (string.IsNullOrEmpty(appName))
                 {
@@ -293,10 +264,8 @@ namespace WPFAPP.Managers
                 var newItem = new WhiteListItem(appName, result.Hash);
                 currentItems.Add(newItem);
 
-                // 8. Сохраняем обновленный конфиг
                 if (SaveConfig(currentItems))
                 {
-                    // 9. Если служба работает - перезагружаем её конфиг
                     if (IsServiceRunning())
                     {
                         ReloadServiceConfig();
@@ -324,7 +293,6 @@ namespace WPFAPP.Managers
         {
             try
             {
-                // Устанавливаем путь если указан
                 if (!string.IsNullOrEmpty(configDir))
                 {
                     SetConfigPath(configDir);
@@ -397,7 +365,7 @@ namespace WPFAPP.Managers
             }
             catch
             {
-                // Игнорируем ошибки перезагрузки службы
+               
             }
         }
     }
