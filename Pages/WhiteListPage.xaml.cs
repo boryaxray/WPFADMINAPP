@@ -29,7 +29,6 @@ namespace WPFAPP.Pages
             _refreshTimer.Tick += (s, e) => RefreshWhiteList();
             _refreshTimer.Start();
 
-            // Автоматически проверяем хеши при загрузке
             this.Loaded += WhiteListPage_Loaded;
         }
 
@@ -45,13 +44,23 @@ namespace WPFAPP.Pages
                 string configPath = WhiteListManager.GetActiveConfigPath();
                 var items = WhiteListManager.LoadFromConfig();
 
-                _items = new ObservableCollection<WhiteListItem>(items);
+                // Удаляем дубликаты по имени (оставляем последний)
+                var uniqueItems = items
+                    .GroupBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+                    .Select(g => g.Last())
+                    .ToList();
 
-                // Важно: заново привязываем ItemsSource
+                // Если были дубликаты - сохраняем очищенный список
+                if (items.Count != uniqueItems.Count)
+                {
+                    WhiteListManager.SaveConfig(uniqueItems);
+                    Debug.WriteLine($"Удалено {items.Count - uniqueItems.Count} дубликатов при загрузке");
+                }
+
+                _items = new ObservableCollection<WhiteListItem>(uniqueItems);
+
                 WhiteListListView.ItemsSource = null;
                 WhiteListListView.ItemsSource = _items;
-
-                // Принудительно обновляем ListView
                 WhiteListListView.Items.Refresh();
 
                 UpdateStats();
@@ -64,7 +73,6 @@ namespace WPFAPP.Pages
                 MessageBox.Show($"Ошибка загрузки белого списка: {ex.Message}", "Ошибка",
                     MessageBoxButton.OK, MessageBoxImage.Error);
 
-                // Создаем пустую коллекцию чтобы не было null
                 _items = new ObservableCollection<WhiteListItem>();
                 WhiteListListView.ItemsSource = _items;
                 StatsText.Text = $"Ошибка загрузки: {ex.Message}";
@@ -120,23 +128,26 @@ namespace WPFAPP.Pages
                 int notFoundCount = 0;
                 int okCount = 0;
 
-                // Обновляем статусы в UI
                 foreach (var result in _checkResults)
                 {
-                    var item = _items.FirstOrDefault(i => i.Name == result.Item.Name);
+                    // Ищем по имени БЕЗ учета регистра
+                    var item = _items.FirstOrDefault(i =>
+                        string.Equals(i.Name, result.Item.Name, StringComparison.OrdinalIgnoreCase));
+
                     if (item != null)
                     {
                         if (!result.FileExists)
                         {
                             item.Status = "Не найден";
-                            item.StatusColor = "#F44336"; // Красный
+                            item.StatusColor = "#F44336";
                             item.HashChanged = false;
+                            item.NewHash = null;
                             notFoundCount++;
                         }
                         else if (result.HashChanged)
                         {
                             item.Status = "Изменен";
-                            item.StatusColor = "#FF9800"; // Оранжевый
+                            item.StatusColor = "#FF9800";
                             item.HashChanged = true;
                             item.NewHash = result.NewHash;
                             changedCount++;
@@ -144,17 +155,16 @@ namespace WPFAPP.Pages
                         else
                         {
                             item.Status = "OK";
-                            item.StatusColor = "#4CAF50"; // Зеленый
+                            item.StatusColor = "#4CAF50";
                             item.HashChanged = false;
+                            item.NewHash = null;
                             okCount++;
                         }
                     }
                 }
 
-                // Показываем кнопку "Обновить всё" если есть изменения
                 UpdateAllBtn.Visibility = changedCount > 0 ? Visibility.Visible : Visibility.Collapsed;
 
-                // Обновляем ListView
                 WhiteListListView.Items.Refresh();
 
                 StatsText.Text = $"Приложений: {_items.Count} | " +
@@ -175,7 +185,6 @@ namespace WPFAPP.Pages
             }
         }
 
-        // Добавление приложения в белый список
         private void AddAppBtn_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -186,8 +195,7 @@ namespace WPFAPP.Pages
                 if (pickerWindow.ShowDialog() == true)
                 {
                     LoadWhiteList();
-                    MessageBox.Show("Выбранные приложения успешно добавлены в белый список",
-                        "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                    // Не показываем MessageBox, окно само закроется
                 }
             }
             catch (Exception ex)
@@ -227,9 +235,7 @@ namespace WPFAPP.Pages
 
                         if (success)
                         {
-                            // Удаляем из коллекции в UI потоке
                             _items.Remove(selectedItem);
-
                             UpdateStats();
                             UpdateEmptyListVisibility();
 
@@ -238,7 +244,6 @@ namespace WPFAPP.Pages
                         }
                         else
                         {
-                            // Перезагружаем список чтобы восстановить состояние
                             LoadWhiteList();
                             MessageBox.Show("Не удалось удалить приложение", "Ошибка",
                                 MessageBoxButton.OK, MessageBoxImage.Error);
@@ -253,7 +258,6 @@ namespace WPFAPP.Pages
             }
             catch (Exception ex)
             {
-                // Перезагружаем список при ошибке
                 LoadWhiteList();
                 MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка",
                     MessageBoxButton.OK, MessageBoxImage.Error);
@@ -288,10 +292,11 @@ namespace WPFAPP.Pages
                     bool success = await HashChecker.UpdateApplicationHash(result.Item, result.NewHash);
                     if (success)
                     {
-                        var item = _items.FirstOrDefault(i => i.Name == result.Item.Name);
+                        // Обновляем хеш в существующем элементе коллекции
+                        var item = _items.FirstOrDefault(i =>
+                            string.Equals(i.Name, result.Item.Name, StringComparison.OrdinalIgnoreCase));
                         if (item != null)
                         {
-                            // Полностью заменяем старый хеш новым
                             item.Hash = result.NewHash;
                             item.Status = "OK";
                             item.StatusColor = "#4CAF50";
@@ -318,12 +323,8 @@ namespace WPFAPP.Pages
                     MessageBoxButton.OK,
                     updatedCount > 0 ? MessageBoxImage.Information : MessageBoxImage.Warning);
 
-                // Перезагружаем список для синхронизации
-                if (updatedCount > 0)
-                {
-                    LoadWhiteList();
-                    await CheckHashesAsync();
-                }
+                // НЕ перезагружаем список и НЕ проверяем хеши повторно!
+                // Всё уже обновлено в существующей коллекции
             }
             catch (Exception ex)
             {
@@ -348,26 +349,27 @@ namespace WPFAPP.Pages
                 button.Content = "...";
                 button.IsEnabled = false;
 
-                var checkResult = _checkResults?.FirstOrDefault(r => r.Item.Name == item.Name);
+                var checkResult = _checkResults?.FirstOrDefault(r =>
+                    string.Equals(r.Item.Name, item.Name, StringComparison.OrdinalIgnoreCase));
+
                 if (checkResult != null && checkResult.HashChanged && !string.IsNullOrEmpty(checkResult.NewHash))
                 {
                     bool success = await HashChecker.UpdateApplicationHash(item, checkResult.NewHash);
                     if (success)
                     {
-                        // Обновляем хеш в UI
+                        // Обновляем хеш в текущем элементе (НЕ перезагружаем список)
                         item.Hash = checkResult.NewHash;
                         item.Status = "OK";
                         item.StatusColor = "#4CAF50";
                         item.HashChanged = false;
                         item.NewHash = null;
 
-                        // Принудительно обновляем ListView
                         WhiteListListView.Items.Refresh();
                         UpdateStats();
 
-                        // Перезагружаем список полностью для синхронизации
-                        LoadWhiteList();
-                        await CheckHashesAsync();
+                        // Обновляем _checkResults чтобы убрать этот элемент из измененных
+                        checkResult.HashChanged = false;
+                        checkResult.OldHash = checkResult.NewHash;
                     }
                     else
                     {

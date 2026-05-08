@@ -24,7 +24,7 @@ namespace WPFAPP.Pages
         private HashSet<string> _existingHashes;
         private GridViewColumnHeader _lastHeaderClicked = null;
         private ListSortDirection _lastDirection = ListSortDirection.Ascending;
-
+        private Dictionary<GridViewColumnHeader, string> _originalHeaders = new Dictionary<GridViewColumnHeader, string>();
         public event PropertyChangedEventHandler PropertyChanged;
 
         public ApplicationPickerWindow()
@@ -32,13 +32,13 @@ namespace WPFAPP.Pages
             InitializeComponent();
             _allApplications = new ObservableCollection<ApplicationInfo>();
             _filteredApplications = new ObservableCollection<ApplicationInfo>();
-
-            // отфильтрованная коллекция
             ApplicationsListView.ItemsSource = _filteredApplications;
-
-            // обработчик клика по заголовкам столбцов
             ApplicationsListView.AddHandler(GridViewColumnHeader.ClickEvent,
-                new RoutedEventHandler(GridViewColumnHeader_Click));
+       new RoutedEventHandler(GridViewColumnHeader_Click));
+            ApplicationInfo.SelectionChanged += () =>
+            {
+                Dispatcher.Invoke(() => UpdateSelectionCount());
+            };
 
             LoadApplicationsAsync();
         }
@@ -50,7 +50,6 @@ namespace WPFAPP.Pages
                 ShowProgress(true, "Сканирование системы...");
                 AddSelectedBtn.IsEnabled = false;
 
-                // Получаем текущий белый список для исключения
                 var whiteListItems = WhiteListManager.LoadFromConfig();
                 _existingHashes = new HashSet<string>(
                     whiteListItems.Select(i => i.Hash),
@@ -58,10 +57,8 @@ namespace WPFAPP.Pages
 
                 _processedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-                // Сканируем систему в фоновом потоке
                 var applications = await Task.Run(() => ScanAllApplications());
 
-                // Обновляем коллекцию в UI потоке
                 await Dispatcher.InvokeAsync(() =>
                 {
                     _allApplications.Clear();
@@ -73,12 +70,14 @@ namespace WPFAPP.Pages
                         _filteredApplications.Add(app);
                     }
 
+                    // Сразу включаем кнопку
+                    AddSelectedBtn.IsEnabled = false;
+
                     UpdateSelectionCount();
                     ShowProgress(false);
-                    AddSelectedBtn.IsEnabled = true;
 
-                    Title = $"Выбор приложений - Найдено: {_allApplications.Count:N0} | " +
-                            $"В белом списке: {whiteListItems.Count:N0}";
+                    StatsText.Text = $"Найдено: {_allApplications.Count:N0} | " +
+                                    $"В белом списке: {whiteListItems.Count:N0}";
                 });
             }
             catch (Exception ex)
@@ -114,13 +113,21 @@ namespace WPFAPP.Pages
                 .ToList();
         }
 
-        // Добавьте этот метод
+
         private void GridViewColumnHeader_Click(object sender, RoutedEventArgs e)
         {
             var headerClicked = e.OriginalSource as GridViewColumnHeader;
 
             if (headerClicked == null || headerClicked.Role == GridViewColumnHeaderRole.Padding)
                 return;
+
+            // Сохраняем оригинальный заголовок при первом клике
+            if (!_originalHeaders.ContainsKey(headerClicked))
+            {
+                _originalHeaders[headerClicked] = headerClicked.Column.Header as string ?? "";
+            }
+
+            string originalHeader = _originalHeaders[headerClicked];
 
             ListSortDirection direction;
 
@@ -135,10 +142,21 @@ namespace WPFAPP.Pages
                     : ListSortDirection.Ascending;
             }
 
-            // Определяем по какому полю сортировать
-            string header = headerClicked.Column.Header as string;
+            // Сортируем
+            Sort(originalHeader, direction);
 
-            Sort(header, direction);
+            // Сначала убираем стрелку с предыдущего заголовка
+            if (_lastHeaderClicked != null && _lastHeaderClicked != headerClicked)
+            {
+                if (_originalHeaders.ContainsKey(_lastHeaderClicked))
+                {
+                    _lastHeaderClicked.Column.Header = _originalHeaders[_lastHeaderClicked];
+                }
+            }
+
+            // Добавляем стрелку к текущему заголовку
+            string arrow = direction == ListSortDirection.Ascending ? " ▲" : " ▼";
+            headerClicked.Column.Header = originalHeader + arrow;
 
             _lastHeaderClicked = headerClicked;
             _lastDirection = direction;
@@ -146,6 +164,9 @@ namespace WPFAPP.Pages
 
         private void Sort(string sortBy, ListSortDirection direction)
         {
+            // Убираем возможные стрелки из имени колонки
+            sortBy = sortBy.Replace(" ▲", "").Replace(" ▼", "").Trim();
+
             ICollectionView dataView = CollectionViewSource.GetDefaultView(_filteredApplications);
 
             dataView.SortDescriptions.Clear();
@@ -155,22 +176,26 @@ namespace WPFAPP.Pages
                 case "Приложение":
                     dataView.SortDescriptions.Add(new SortDescription("Name", direction));
                     break;
+                case "Файл":
+                    dataView.SortDescriptions.Add(new SortDescription("FileName", direction));
+                    break;
                 case "Путь":
                     dataView.SortDescriptions.Add(new SortDescription("FilePath", direction));
                     break;
                 case "Размер":
                     dataView.SortDescriptions.Add(new SortDescription("Size", direction));
                     break;
-                case "Изменен":
-                    dataView.SortDescriptions.Add(new SortDescription("LastModified", direction));
-                    break;
                 case "Статус":
                     dataView.SortDescriptions.Add(new SortDescription("Status", direction));
+                    break;
+                default:
+                    dataView.SortDescriptions.Add(new SortDescription("Name", direction));
                     break;
             }
 
             dataView.Refresh();
         }
+
 
         private List<ApplicationInfo> ScanInstalledFromRegistry()
         {
@@ -667,8 +692,33 @@ namespace WPFAPP.Pages
 
         private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            FilterApplications(SearchTextBox.Text);
+            if (_allApplications == null) return;
+
+            _filteredApplications.Clear();
+
+            string search = SearchTextBox.Text?.ToLower() ?? "";
+
+            if (string.IsNullOrWhiteSpace(search))
+            {
+                foreach (var app in _allApplications)
+                {
+                    _filteredApplications.Add(app);
+                }
+            }
+            else
+            {
+                foreach (var app in _allApplications.Where(a =>
+                    a.Name.ToLower().Contains(search) ||
+                    a.FileName.ToLower().Contains(search) ||
+                    a.FilePath.ToLower().Contains(search)))
+                {
+                    _filteredApplications.Add(app);
+                }
+            }
+
+            UpdateSelectionCount();
         }
+
 
         private void FilterApplications(string searchText)
         {
@@ -732,6 +782,7 @@ namespace WPFAPP.Pages
 
         private async void AddSelectedBtn_Click(object sender, RoutedEventArgs e)
         {
+            // Считаем выбранные из основной коллекции
             var selectedApps = _allApplications.Where(a => a.IsSelected).ToList();
 
             if (selectedApps.Count == 0)
@@ -743,7 +794,8 @@ namespace WPFAPP.Pages
 
             try
             {
-                ShowProgress(true, $"Добавление {selectedApps.Count} приложений...");
+                int totalToAdd = selectedApps.Count;
+                ShowProgress(true, $"Добавление {totalToAdd} приложений...");
                 AddSelectedBtn.IsEnabled = false;
 
                 int addedCount = 0;
@@ -766,6 +818,7 @@ namespace WPFAPP.Pages
                                     addedCount++;
                                     app.Status = "Добавлено ✓";
                                     app.StatusColor = "Green";
+                                    app.IsSelected = false; // Снимаем выбор
                                 }
                                 else
                                 {
@@ -788,10 +841,18 @@ namespace WPFAPP.Pages
                             });
                         }
 
-                        int progress = (int)((double)(i + 1) / selectedApps.Count * 100);
-                        Dispatcher.Invoke(() => ProgressBar.Value = progress);
+                        // Обновляем прогресс
+                        int progress = (int)((double)(i + 1) / totalToAdd * 100);
+                        Dispatcher.Invoke(() =>
+                        {
+                            ProgressBar.Value = progress;
+                            ProgressText.Text = $"Добавлено: {addedCount} из {totalToAdd}";
+                        });
                     }
                 });
+
+                // Обновляем счетчик после добавления
+                UpdateSelectionCount();
 
                 string message = $"✓ Добавлено: {addedCount}\n✗ Пропущено: {skippedCount}";
                 if (errors.Count > 0)
@@ -821,6 +882,7 @@ namespace WPFAPP.Pages
             {
                 ShowProgress(false);
                 AddSelectedBtn.IsEnabled = true;
+                UpdateSelectionCount();
             }
         }
 
@@ -832,11 +894,27 @@ namespace WPFAPP.Pages
 
         private void UpdateSelectionCount()
         {
-            if (_allApplications != null)
+            if (_allApplications != null && _allApplications.Count > 0)
             {
-                int selected = _allApplications.Count(a => a.IsSelected);
+                int selected = 0;
+
+                // Считаем выбранные из ВСЕХ приложений
+                foreach (var app in _allApplications)
+                {
+                    if (app.IsSelected)
+                        selected++;
+                }
+
                 int total = _allApplications.Count;
-                int visible = _filteredApplications.Count;
+                int visible = 0;
+
+                // Считаем видимые элементы
+                var view = CollectionViewSource.GetDefaultView(_filteredApplications);
+                foreach (var item in view)
+                {
+                    visible++;
+                }
+
                 int inWhiteList = _existingHashes?.Count ?? 0;
 
                 AddSelectedBtn.Content = $"Добавить выбранные ({selected:N0})";
@@ -844,6 +922,14 @@ namespace WPFAPP.Pages
                                 $"В белом списке: {inWhiteList:N0} | " +
                                 $"Выбрано: {selected:N0} | " +
                                 $"Показано: {visible:N0}";
+
+                // Отключаем кнопку если ничего не выбрано
+                AddSelectedBtn.IsEnabled = selected > 0;
+            }
+            else
+            {
+                AddSelectedBtn.Content = "Добавить выбранные (0)";
+                AddSelectedBtn.IsEnabled = false;
             }
         }
 
@@ -858,6 +944,9 @@ namespace WPFAPP.Pages
         private bool _isSelected;
         private string _status = "";
         private string _statusColor = "Gray";
+
+       
+        public static event Action SelectionChanged;
 
         public string Name { get; set; }
         public string FileName { get; set; }
@@ -875,6 +964,8 @@ namespace WPFAPP.Pages
                 {
                     _isSelected = value;
                     OnPropertyChanged();
+                    // Уведомляем окно об изменении выбора
+                    SelectionChanged?.Invoke();
                 }
             }
         }

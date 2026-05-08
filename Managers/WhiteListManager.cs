@@ -28,7 +28,6 @@ namespace WPFAPP.Managers
     public static class WhiteListManager
     {
         private static readonly string DefaultConfigDir = @"C:\ProgramData\AppControl\WhiteList";
-        private static string _configPath = null;
 
         public static string GetConfigDirectory()
         {
@@ -64,7 +63,6 @@ namespace WPFAPP.Managers
                 {
                     Properties.Settings.Default.WhiteListPath = path;
                     Properties.Settings.Default.Save();
-                    _configPath = null;
                 }
             }
             catch { }
@@ -82,11 +80,8 @@ namespace WPFAPP.Managers
             {
                 string configPath = GetActiveConfigPath();
 
-                WriteDebug($"Загружаем конфиг из: {configPath}");
-
                 if (!File.Exists(configPath))
                 {
-                    WriteDebug($"Файл конфига не найден, создаем пустой: {configPath}");
                     SaveConfig(new List<WhiteListItem>());
                     return new List<WhiteListItem>();
                 }
@@ -96,7 +91,6 @@ namespace WPFAPP.Managers
 
                 if (string.IsNullOrEmpty(json) || json == "[]" || json == "{}")
                 {
-                    WriteDebug("Конфиг пустой");
                     return new List<WhiteListItem>();
                 }
 
@@ -114,14 +108,11 @@ namespace WPFAPP.Managers
                     var items = (List<WhiteListItem>)serializer.ReadObject(ms) ?? new List<WhiteListItem>();
                     var validItems = items.Where(item => item.IsValid()).ToList();
 
-                    WriteDebug($"Загружено {validItems.Count} валидных записей из {items.Count} всего");
-
                     return validItems;
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                WriteDebug($"Ошибка загрузки конфига: {ex.Message}");
                 return new List<WhiteListItem>();
             }
         }
@@ -131,15 +122,18 @@ namespace WPFAPP.Managers
             try
             {
                 string configPath = GetActiveConfigPath();
-
-                WriteDebug($"Сохраняем конфиг в: {configPath}");
-
                 string configDir = Path.GetDirectoryName(configPath);
+
                 if (!Directory.Exists(configDir))
                 {
                     Directory.CreateDirectory(configDir);
-                    WriteDebug($"Создана директория: {configDir}");
                 }
+
+                // Удаляем дубликаты перед сохранением
+                var uniqueItems = items
+                    .GroupBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+                    .Select(g => g.Last())
+                    .ToList();
 
                 using (MemoryStream ms = new MemoryStream())
                 {
@@ -152,7 +146,7 @@ namespace WPFAPP.Managers
                         }
                     );
 
-                    serializer.WriteObject(ms, items);
+                    serializer.WriteObject(ms, uniqueItems);
                     ms.Position = 0;
 
                     string json = Encoding.UTF8.GetString(ms.ToArray());
@@ -160,33 +154,13 @@ namespace WPFAPP.Managers
 
                     File.WriteAllText(configPath, json, new UTF8Encoding(false));
 
-                    WriteDebug($"Сохранено {items.Count} записей");
                     return true;
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                WriteDebug($"Ошибка сохранения конфига: {ex.Message}");
                 return false;
             }
-        }
-
-        private static void WriteDebug(string message)
-        {
-            System.Diagnostics.Debug.WriteLine($"[WhiteListManager] {DateTime.Now:HH:mm:ss} {message}");
-
-            try
-            {
-                string logPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                    "AppControl", "admin_util.log");
-                string logDir = Path.GetDirectoryName(logPath);
-
-                if (!Directory.Exists(logDir))
-                    Directory.CreateDirectory(logDir);
-
-                File.AppendAllText(logPath, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {message}\n");
-            }
-            catch { }
         }
 
         private static string FormatJson(string json)
@@ -223,13 +197,6 @@ namespace WPFAPP.Managers
                     return result;
                 }
 
-                if (HashUtils.IsSystemFile(filePath))
-                {
-                    result.Error = "Нельзя добавлять системные файлы в белый список";
-                    result.Success = false;
-                    return result;
-                }
-
                 result.Hash = HashUtils.CalculateSHA256(filePath);
 
                 if (string.IsNullOrEmpty(result.Hash))
@@ -239,26 +206,22 @@ namespace WPFAPP.Managers
                     return result;
                 }
 
-                if (!HashUtils.ValidateHash(result.Hash))
-                {
-                    result.Error = $"Некорректный формат хэша (длина: {result.Hash.Length})";
-                    result.Success = false;
-                    return result;
-                }
-
                 var currentItems = LoadFromConfig();
 
-                if (currentItems.Any(item => item.Hash.Equals(result.Hash, StringComparison.OrdinalIgnoreCase)))
-                {
-                    result.Error = "Приложение уже находится в белом списке";
-                    result.Success = false;
-                    return result;
-                }
-
+                // Проверяем по хешу И по имени
                 string appName = Path.GetFileNameWithoutExtension(filePath);
                 if (string.IsNullOrEmpty(appName))
                 {
                     appName = "Unknown Application";
+                }
+
+                if (currentItems.Any(item =>
+                    item.Hash.Equals(result.Hash, StringComparison.OrdinalIgnoreCase) ||
+                    item.Name.Equals(appName, StringComparison.OrdinalIgnoreCase)))
+                {
+                    result.Error = "Приложение уже находится в белом списке";
+                    result.Success = false;
+                    return result;
                 }
 
                 var newItem = new WhiteListItem(appName, result.Hash);
@@ -299,9 +262,16 @@ namespace WPFAPP.Managers
                 }
 
                 var allItems = LoadFromConfig();
+
                 var itemsToKeep = allItems.Where(item =>
                     !itemsToRemove.Any(toRemove =>
-                        toRemove.Hash.Equals(item.Hash, StringComparison.OrdinalIgnoreCase))).ToList();
+                        toRemove.Hash.Equals(item.Hash, StringComparison.OrdinalIgnoreCase) &&
+                        toRemove.Name.Equals(item.Name, StringComparison.OrdinalIgnoreCase))).ToList();
+
+                if (itemsToKeep.Count == allItems.Count)
+                {
+                    return false;
+                }
 
                 bool saved = SaveConfig(itemsToKeep);
 
@@ -312,25 +282,53 @@ namespace WPFAPP.Managers
 
                 return saved;
             }
-            catch (Exception ex)
+            catch
             {
-                throw new Exception($"Ошибка удаления приложений: {ex.Message}");
+                return false;
             }
         }
 
-        public static string SelectFile()
+        public static bool UpdateApplicationHash(string appName, string oldHash, string newHash)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "Исполняемые файлы (*.exe)|*.exe|Все файлы (*.*)|*.*";
-            openFileDialog.Title = "Выберите приложение для добавления в белый список";
-            openFileDialog.CheckFileExists = true;
-
-            if (openFileDialog.ShowDialog() == true)
+            try
             {
-                return openFileDialog.FileName;
-            }
+                var allItems = LoadFromConfig();
 
-            return null;
+                var targetItem = allItems.FirstOrDefault(i =>
+                    i.Hash.Equals(oldHash, StringComparison.OrdinalIgnoreCase) &&
+                    i.Name.Equals(appName, StringComparison.OrdinalIgnoreCase));
+
+                if (targetItem == null)
+                {
+                    return false;
+                }
+
+                // Проверяем, нет ли уже такого хеша у другого приложения
+                var existingWithNewHash = allItems.FirstOrDefault(i =>
+                    i.Hash.Equals(newHash, StringComparison.OrdinalIgnoreCase) &&
+                    i != targetItem);
+
+                if (existingWithNewHash != null)
+                {
+                    // Удаляем дубликат если это то же приложение
+                    if (existingWithNewHash.Name.Equals(appName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        allItems.Remove(existingWithNewHash);
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+
+                targetItem.Hash = newHash;
+
+                return SaveConfig(allItems);
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         private static bool IsServiceRunning()
@@ -363,10 +361,7 @@ namespace WPFAPP.Managers
                     }
                 }
             }
-            catch
-            {
-               
-            }
+            catch { }
         }
     }
 }

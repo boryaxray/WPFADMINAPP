@@ -8,9 +8,6 @@
     <Compile Update="Pages\LogsPage.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Pages\PasswordDialog.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Update="Pages\ServicePage.xaml.cs">
       <SubType>Code</SubType>
     </Compile>

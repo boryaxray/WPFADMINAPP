@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,17 +21,6 @@ namespace WPFAPP.Managers
 
     public static class HashChecker
     {
-        private static readonly string[] SearchPaths = {
-            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
-            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
-            Environment.GetFolderPath(Environment.SpecialFolder.Windows),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "System32"),
-            Environment.GetFolderPath(Environment.SpecialFolder.CommonStartMenu),
-            Environment.GetFolderPath(Environment.SpecialFolder.StartMenu),
-            Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
-        };
-
         public static async Task<List<HashCheckResult>> CheckAllHashesAsync(List<WhiteListItem> items)
         {
             return await Task.Run(() => CheckAllHashes(items));
@@ -39,12 +29,7 @@ namespace WPFAPP.Managers
         private static List<HashCheckResult> CheckAllHashes(List<WhiteListItem> items)
         {
             var results = new List<HashCheckResult>();
-            var foundFiles = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            // Сканируем систему
-            ScanForExecutableFiles(foundFiles);
-
-            // Проверяем каждый элемент
             foreach (var item in items)
             {
                 var result = new HashCheckResult
@@ -53,9 +38,10 @@ namespace WPFAPP.Managers
                     OldHash = item.Hash
                 };
 
-                string foundPath = FindFileByName(foundFiles, item.Name);
+                // Ищем файл по всей системе
+                string foundPath = FindApplicationPath(item.Name);
 
-                if (foundPath != null && File.Exists(foundPath))
+                if (!string.IsNullOrEmpty(foundPath) && File.Exists(foundPath))
                 {
                     result.FileExists = true;
                     result.FilePath = foundPath;
@@ -77,48 +63,178 @@ namespace WPFAPP.Managers
             return results;
         }
 
-        private static void ScanForExecutableFiles(Dictionary<string, string> foundFiles)
-        {
-            foreach (var searchPath in SearchPaths)
-            {
-                if (!Directory.Exists(searchPath))
-                    continue;
-
-                try
-                {
-                    foreach (var exeFile in Directory.GetFiles(searchPath, "*.exe", SearchOption.AllDirectories)
-                        .Take(10000))
-                    {
-                        try
-                        {
-                            string fileName = Path.GetFileNameWithoutExtension(exeFile);
-                            if (!foundFiles.ContainsKey(fileName))
-                            {
-                                foundFiles[fileName] = exeFile;
-                            }
-                        }
-                        catch { }
-                    }
-                }
-                catch { }
-            }
-        }
-
-        private static string FindFileByName(Dictionary<string, string> foundFiles, string appName)
+        private static string FindApplicationPath(string appName)
         {
             if (string.IsNullOrEmpty(appName))
                 return null;
 
-            if (foundFiles.TryGetValue(appName, out string path))
-                return path;
+            // 1. Проверяем запущенные процессы
+            try
+            {
+                var processes = Process.GetProcessesByName(appName);
+                if (processes.Length > 0)
+                {
+                    try
+                    {
+                        string path = processes[0].MainModule?.FileName;
+                        if (!string.IsNullOrEmpty(path) && File.Exists(path))
+                            return path;
+                    }
+                    catch { }
+                }
+            }
+            catch { }
 
-            var match = foundFiles.FirstOrDefault(f =>
-                string.Equals(f.Key, appName, StringComparison.OrdinalIgnoreCase));
+            // 2. Ищем через Where.exe (быстрый поиск в PATH)
+            try
+            {
+                using (Process whereProcess = new Process())
+                {
+                    whereProcess.StartInfo.FileName = "where.exe";
+                    whereProcess.StartInfo.Arguments = appName + ".exe";
+                    whereProcess.StartInfo.UseShellExecute = false;
+                    whereProcess.StartInfo.CreateNoWindow = true;
+                    whereProcess.StartInfo.RedirectStandardOutput = true;
 
-            if (!string.IsNullOrEmpty(match.Key))
-                return match.Value;
+                    whereProcess.Start();
+                    string output = whereProcess.StandardOutput.ReadToEnd();
+                    whereProcess.WaitForExit(3000);
+
+                    if (!string.IsNullOrEmpty(output))
+                    {
+                        string firstPath = output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+                            .FirstOrDefault();
+                        if (!string.IsNullOrEmpty(firstPath) && File.Exists(firstPath))
+                            return firstPath;
+                    }
+                }
+            }
+            catch { }
+
+            // 3. Поиск в Program Files
+            string[] searchDirs = {
+                Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
+                Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs"),
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                Environment.GetFolderPath(Environment.SpecialFolder.Windows),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "System32"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "SysWOW64"),
+                Environment.GetFolderPath(Environment.SpecialFolder.CommonStartMenu),
+                Environment.GetFolderPath(Environment.SpecialFolder.StartMenu),
+                Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+                Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory)
+            };
+
+            foreach (var dir in searchDirs)
+            {
+                if (!Directory.Exists(dir))
+                    continue;
+
+                try
+                {
+                    // Ищем точное совпадение
+                    string exactPath = Path.Combine(dir, appName + ".exe");
+                    if (File.Exists(exactPath))
+                        return exactPath;
+
+                    // Рекурсивный поиск (ограниченный)
+                    var foundFiles = Directory.GetFiles(dir, appName + ".exe", SearchOption.AllDirectories)
+                        .Take(5);
+
+                    if (foundFiles.Any())
+                        return foundFiles.First();
+                }
+                catch { }
+            }
+
+            // 4. Поиск через реестр (Uninstall)
+            try
+            {
+                string path = FindPathFromRegistry(appName);
+                if (!string.IsNullOrEmpty(path))
+                    return path;
+            }
+            catch { }
 
             return null;
+        }
+
+        private static string FindPathFromRegistry(string appName)
+        {
+            string[] registryPaths = {
+                @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall",
+                @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
+            };
+
+            foreach (var regPath in registryPaths)
+            {
+                try
+                {
+                    using (var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(regPath))
+                    {
+                        if (key == null) continue;
+
+                        foreach (string subKeyName in key.GetSubKeyNames())
+                        {
+                            try
+                            {
+                                using (var subKey = key.OpenSubKey(subKeyName))
+                                {
+                                    if (subKey == null) continue;
+
+                                    string displayName = subKey.GetValue("DisplayName") as string;
+                                    if (string.IsNullOrEmpty(displayName)) continue;
+
+                                    if (displayName.IndexOf(appName, StringComparison.OrdinalIgnoreCase) >= 0)
+                                    {
+                                        string iconPath = subKey.GetValue("DisplayIcon") as string;
+                                        string installPath = subKey.GetValue("InstallLocation") as string;
+
+                                        string exePath = CleanExePath(iconPath);
+                                        if (!string.IsNullOrEmpty(exePath) && File.Exists(exePath))
+                                            return exePath;
+
+                                        if (!string.IsNullOrEmpty(installPath))
+                                        {
+                                            string possiblePath = Path.Combine(installPath, appName + ".exe");
+                                            if (File.Exists(possiblePath))
+                                                return possiblePath;
+                                        }
+                                    }
+                                }
+                            }
+                            catch { }
+                        }
+                    }
+                }
+                catch { }
+            }
+
+            return null;
+        }
+
+        private static string CleanExePath(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+                return null;
+
+            path = path.Trim('"', '\'');
+
+            int exeIndex = path.ToLower().IndexOf(".exe");
+            if (exeIndex > 0)
+            {
+                path = path.Substring(0, exeIndex + 4);
+            }
+
+            int commaIndex = path.IndexOf(',');
+            if (commaIndex > 0)
+            {
+                path = path.Substring(0, commaIndex);
+            }
+
+            return path.Trim();
         }
 
         public static async Task<bool> UpdateApplicationHash(WhiteListItem item, string newHash)
@@ -127,46 +243,14 @@ namespace WPFAPP.Managers
             {
                 try
                 {
-                    // Загружаем текущий конфиг
-                    var allItems = WhiteListManager.LoadFromConfig();
-
-                    // Ищем элемент по имени (или по старому хешу)
-                    var targetItem = allItems.FirstOrDefault(i =>
-                        i.Name.Equals(item.Name, StringComparison.OrdinalIgnoreCase) ||
-                        i.Hash.Equals(item.Hash, StringComparison.OrdinalIgnoreCase));
-
-                    if (targetItem != null)
-                    {
-                        // Полностью заменяем старый хеш на новый
-                        targetItem.Hash = newHash;
-
-                        // Сохраняем обновленный список
-                        bool saved = WhiteListManager.SaveConfig(allItems);
-
-                        if (saved)
-                        {
-                            WriteDebug($"Хеш обновлен для {item.Name}: {item.Hash.Substring(0, 16)}... -> {newHash.Substring(0, 16)}...");
-                            return true;
-                        }
-                    }
-                    else
-                    {
-                        WriteDebug($"Приложение {item.Name} не найдено в белом списке");
-                    }
-
-                    return false;
+                    return WhiteListManager.UpdateApplicationHash(item.Name, item.Hash, newHash);
                 }
                 catch (Exception ex)
                 {
-                    WriteDebug($"Ошибка обновления хеша: {ex.Message}");
+                    Debug.WriteLine($"[HashChecker] Ошибка обновления хеша: {ex.Message}");
                     return false;
                 }
             });
-        }
-
-        private static void WriteDebug(string message)
-        {
-            System.Diagnostics.Debug.WriteLine($"[HashChecker] {DateTime.Now:HH:mm:ss} {message}");
         }
     }
 }

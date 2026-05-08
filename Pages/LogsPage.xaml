@@ -6,101 +6,124 @@
       Background="Transparent">
 
     <Page.Resources>
-        <Style x:Key="CardStyle" TargetType="Border">
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="CornerRadius" Value="4"/>
-            <Setter Property="BorderBrush" Value="#E0E0E0"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Effect">
+        <DropShadowEffect x:Key="CardShadow" BlurRadius="15" ShadowDepth="3" Opacity="0.06" Color="#000000"/>
+
+        <Style x:Key="ModernButton" TargetType="Button">
+            <Setter Property="Background" Value="#673AB7"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Padding" Value="16,10"/>
+            <Setter Property="Template">
                 <Setter.Value>
-                    <DropShadowEffect BlurRadius="8" ShadowDepth="2" Color="#20000000"/>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" 
+                                Background="{TemplateBinding Background}" 
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Opacity" Value="0.9"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
 
-        <Style x:Key="PrimaryButton" TargetType="Button">
-            <Setter Property="Background" Value="#2196F3"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#1976D2"/>
-                </Trigger>
-            </Style.Triggers>
+        <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource ModernButton}">
+            <Setter Property="Background" Value="#F44336"/>
         </Style>
     </Page.Resources>
 
-    <Grid Margin="10">
-        <Border Style="{StaticResource CardStyle}" Padding="20">
+    <Grid>
+        <Border Background="White" 
+                CornerRadius="12" 
+                Padding="30"
+                Effect="{StaticResource CardShadow}">
             <StackPanel>
+                <!-- Заголовок -->
                 <TextBlock Text="Логи системы" 
-                           FontSize="18"
-                           FontWeight="Bold"
-                           Foreground="#333333"
-                           Margin="0,0,0,20"/>
+                           FontSize="20" FontWeight="Bold" 
+                           Foreground="#1A1A2E"
+                           Margin="0,0,0,8"/>
+                <TextBlock Text="Просмотр и управление логами службы контроля" 
+                           FontSize="13" 
+                           Foreground="#999999"
+                           Margin="0,0,0,25"/>
 
-                <!-- Кнопки управления -->
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                <!-- Путь к логам -->
+                <Border Background="#F8F9FA" 
+                        CornerRadius="8" 
+                        Padding="16"
+                        Margin="0,0,0,20"
+                        BorderBrush="#E9ECEF"
+                        BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="Путь к файлам логов:" 
+                                   FontSize="12" FontWeight="SemiBold" 
+                                   Foreground="#999999"
+                                   Margin="0,0,0,6"/>
+                        <TextBlock x:Name="LogPathText"
+                                   Text="C:\ProgramData\AppControl\detailed.log" 
+                                   FontFamily="Consolas"
+                                   FontSize="12"
+                                   Foreground="#555555"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Кнопки -->
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,25">
                     <Button x:Name="OpenLogsBtn" 
-                            Style="{StaticResource PrimaryButton}"
-                            Width="140"
-                            Height="35"
-                            Padding="10,5"
-                            Margin="5"
+                            Style="{StaticResource ModernButton}"
+                            Width="170" Height="42"
+                            Margin="0,0,12,0"
                             Click="OpenLogsBtn_Click">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
-                            <materialDesign:PackIcon Kind="Text" Width="20" Height="20" Margin="0,0,5,0"/>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="FileDocument" Width="18" Height="18" Margin="0,0,8,0"/>
                             <TextBlock Text="Открыть логи"/>
                         </StackPanel>
                     </Button>
 
                     <Button x:Name="ClearLogsBtn" 
-                            Style="{StaticResource PrimaryButton}"
-                            Width="120"
-                            Height="35"
-                            Padding="10,5"
-                            Background="#F44336"
+                            Style="{StaticResource DangerButton}"
+                            Width="170" Height="42"
                             Click="ClearLogsBtn_Click">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <materialDesign:PackIcon Kind="DeleteSweep" Width="20" Height="20" Margin="0,0,5,0"/>
+                            <materialDesign:PackIcon Kind="DeleteSweep" Width="18" Height="18" Margin="0,0,8,0"/>
                             <TextBlock Text="Очистить логи"/>
                         </StackPanel>
                     </Button>
-                    <StackPanel Margin="0,0,0,20">
-                        <TextBlock Text="Путь к файлу логов:" 
-               FontWeight="SemiBold"
-               Foreground="#333333"
-               Margin="0,0,0,5"/>
-
-                        <Border Background="#F5F5F5" 
-            CornerRadius="4" 
-            Padding="10">
-                            <TextBlock x:Name="LogPathText"
-                   Text="C:\ProgramData\AppControl\detailed.log" 
-                   FontFamily="Consolas"
-                   FontSize="12"
-                   Foreground="#666666"/>
-                        </Border>
-                    </StackPanel>
                 </StackPanel>
-                
-                <!-- Примечания -->
-                <Border Background="#FFF3E0" 
-                        CornerRadius="4" 
-                        Padding="15">
-                    <StackPanel>
-                        <TextBlock Text="Примечание:" 
-                                   FontWeight="SemiBold"
-                                   Foreground="#333333"
-                                   Margin="0,0,0,10"/>
 
-                        <TextBlock Text="Логи будут открыты в стандартном блокноте Windows. При каждом запуске основной программы логи очищаются автоматически." 
-                                   TextWrapping="Wrap"
-                                   Foreground="#666666"
-                                   FontSize="13"/>
+                <!-- Информация -->
+                <Border Background="#FFF8E1" 
+                        CornerRadius="8" 
+                        Padding="18"
+                        BorderBrush="#FFE082"
+                        BorderThickness="1">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="InformationOutline" 
+                                                 Width="20" Height="20" 
+                                                 Foreground="#F57C00"
+                                                 Margin="0,0,12,0"
+                                                 VerticalAlignment="Top"/>
+                        <StackPanel>
+                            <TextBlock Text="Примечание" 
+                                       FontWeight="SemiBold"
+                                       Foreground="#333333"
+                                       Margin="0,0,0,6"
+                                       FontSize="13"/>
+                            <TextBlock Text="Логи будут открыты в стандартном блокноте Windows. При каждом запуске основной программы логи очищаются автоматически." 
+                                       TextWrapping="Wrap"
+                                       Foreground="#666666"
+                                       FontSize="12"
+                                       LineHeight="18"/>
+                        </StackPanel>
                     </StackPanel>
                 </Border>
             </StackPanel>

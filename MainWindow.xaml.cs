@@ -17,11 +17,13 @@ namespace WPFAPP
 
         public MainWindow()
         {
+            System.Diagnostics.PresentationTraceSources.DataBindingSource.Switch.Level = System.Diagnostics.SourceLevels.Critical;
             InitializeComponent();
             LoadWhiteListPage();
             InitializeStatusTimer();
             UpdateServiceStatus();
             this.Loaded += MainWindow_Loaded;
+
         }
 
         private void InitializeStatusTimer()
@@ -173,5 +175,7 @@ namespace WPFAPP
             _statusTimer?.Stop();
             base.OnClosed(e);
         }
+
+       
     }
 }
