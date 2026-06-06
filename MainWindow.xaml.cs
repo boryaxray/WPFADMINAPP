@@ -162,11 +162,46 @@ namespace WPFAPP
                         StatusDot.Fill = Brushes.Gray;
                         break;
                 }
+                UpdateProtectionStatus();
             }
             catch (Exception)
             {
                 ServiceStatusText.Text = "Ошибка";
                 StatusDot.Fill = Brushes.Gray;
+            }
+        }
+
+        private void UpdateProtectionStatus()
+        {
+            try
+            {
+                string serviceStatus = ServiceManager.GetServiceStatus();
+
+                if (serviceStatus == "Running")
+                {
+                    ProtectionStatusText.Text = "🛡️ Защита активна";
+                    ProtectionStatusText.Foreground = new SolidColorBrush(Color.FromRgb(76, 175, 80));
+                }
+                else if (serviceStatus == "Stopped")
+                {
+                    ProtectionStatusText.Text = "⚠️ Служба остановлена";
+                    ProtectionStatusText.Foreground = new SolidColorBrush(Color.FromRgb(255, 152, 0));
+                }
+                else if (serviceStatus == "Not Installed")
+                {
+                    ProtectionStatusText.Text = "❌ Служба не установлена";
+                    ProtectionStatusText.Foreground = new SolidColorBrush(Color.FromRgb(244, 67, 54));
+                }
+                else
+                {
+                    ProtectionStatusText.Text = "❓ Статус защиты неизвестен";
+                    ProtectionStatusText.Foreground = new SolidColorBrush(Color.FromRgb(158, 158, 158));
+                }
+            }
+            catch
+            {
+                ProtectionStatusText.Text = "❌ Ошибка проверки защиты";
+                ProtectionStatusText.Foreground = new SolidColorBrush(Color.FromRgb(244, 67, 54));
             }
         }
 

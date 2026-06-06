@@ -238,9 +238,10 @@ namespace WPFAPP.Pages
                             _items.Remove(selectedItem);
                             UpdateStats();
                             UpdateEmptyListVisibility();
-
+                            LoadWhiteList();
                             MessageBox.Show("Приложение успешно удалено", "Успех",
                                 MessageBoxButton.OK, MessageBoxImage.Information);
+
                         }
                         else
                         {

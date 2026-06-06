@@ -154,3 +154,4 @@ C:\ApplicationControlService\WPFAPP\bin\Debug\net8.0-windows\System.Management.d
 C:\ApplicationControlService\WPFAPP\bin\Debug\net8.0-windows\runtimes\win\lib\net8.0\System.Management.dll
 C:\ApplicationControlService\WPFAPP\obj\Debug\net8.0-windows\WPFAPP.Properties.Resources.resources
 C:\ApplicationControlService\WPFAPP\obj\Debug\net8.0-windows\WPFAPP.csproj.GenerateResource.cache
+C:\ApplicationControlService\WPFAPP\obj\Debug\net8.0-windows\WPFAPP_Content.g.cs

@@ -185,24 +185,25 @@
 
             <!-- Нижняя панель -->
             <Border Grid.Row="2" 
-                    Background="White" 
-                    CornerRadius="0,0,12,12"
-                    Height="35"
-                    BorderBrush="#E8E8E8"
-                    BorderThickness="0,1,0,0">
+        Background="White" 
+        CornerRadius="0,0,12,12"
+        Height="35"
+        BorderBrush="#E8E8E8"
+        BorderThickness="0,1,0,0">
                 <StackPanel Orientation="Horizontal" 
-                            VerticalAlignment="Center" 
-                            Margin="20,0">
+                VerticalAlignment="Center" 
+                Margin="20,0">
                     <TextBlock Text="Application Control Manager v1.0" 
-                               FontSize="11" 
-                               Foreground="#999999"/>
+                   FontSize="11" 
+                   Foreground="#999999"/>
                     <TextBlock Text=" | " 
-                               FontSize="11" 
-                               Foreground="#CCCCCC"/>
-                    <TextBlock Text="Защита активна" 
-                               FontSize="11" 
-                               Foreground="#4CAF50"
-                               FontWeight="Medium"/>
+                   FontSize="11" 
+                   Foreground="#CCCCCC"/>
+                    <TextBlock x:Name="ProtectionStatusText"
+                   Text="Проверка защиты..." 
+                   FontSize="11" 
+                   Foreground="#FF9800"
+                   FontWeight="Medium"/>
                 </StackPanel>
             </Border>
         </Grid>

@@ -158,7 +158,7 @@
                             Click="RemoveAppBtn_Click">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="Delete" Width="18" Height="18" Margin="0,0,8,0"/>
-                            <TextBlock Text="Удалить выбранное"/>
+                            <TextBlock Text="Удалить"/>
                         </StackPanel>
                     </Button>
 
