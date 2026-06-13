@@ -383,11 +383,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\ApplicationControlService\\WPFAPP\\WPFAPP.csproj",
+      "projectUniqueName": "C:\\ApplicationControlService\\WPFADMINAPP\\WPFAPP.csproj",
       "projectName": "WPFAPP",
-      "projectPath": "C:\\ApplicationControlService\\WPFAPP\\WPFAPP.csproj",
+      "projectPath": "C:\\ApplicationControlService\\WPFADMINAPP\\WPFAPP.csproj",
       "packagesPath": "C:\\Users\\alek7\\.nuget\\packages\\",
-      "outputPath": "C:\\ApplicationControlService\\WPFAPP\\obj\\",
+      "outputPath": "C:\\ApplicationControlService\\WPFADMINAPP\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

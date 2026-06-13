@@ -233,14 +233,14 @@
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
 
-                        <!-- Заголовки колонок -->
+                        <!-- Заголовки колонок (кликабельные) -->
                         <Border Grid.Row="0" 
                                 Background="#F8F9FA" 
                                 CornerRadius="12,12,0,0"
-                                Padding="16,12"
                                 BorderBrush="#E9ECEF"
-                                BorderThickness="0,0,0,1">
-                            <Grid>
+                                BorderThickness="0,0,0,1"
+                                >
+                            <Grid Height="45" Margin="16,0">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="45"/>
                                     <ColumnDefinition Width="220"/>
@@ -257,39 +257,52 @@
                                            FontSize="12"
                                            HorizontalAlignment="Center"/>
 
-                                <TextBlock Grid.Column="1" 
+                                <TextBlock x:Name="Header_Application" Grid.Column="1" 
+                                           Tag="Приложение"
                                            Text="Приложение" 
                                            FontWeight="SemiBold"
                                            Foreground="#666666"
-                                           FontSize="12"/>
+                                           FontSize="12"
+                                           Cursor="Hand"
+                                           MouseLeftButtonDown="Header_Click"/>
 
-                                <TextBlock Grid.Column="2" 
+                                <TextBlock x:Name="Header_File" Grid.Column="2" 
+                                           Tag="Файл"
                                            Text="Файл" 
                                            FontWeight="SemiBold"
                                            Foreground="#666666"
-                                           FontSize="12"/>
+                                           FontSize="12"
+                                           Cursor="Hand"
+                                           MouseLeftButtonDown="Header_Click"/>
 
-                                <TextBlock Grid.Column="3" 
+                                <TextBlock x:Name="Header_Path" Grid.Column="3" 
+                                           Tag="Путь"
                                            Text="Путь" 
                                            FontWeight="SemiBold"
                                            Foreground="#666666"
-                                            MaxHeight="250"
-                                           FontSize="12"/>
+                                           FontSize="12"
+                                           Cursor="Hand"
+                                           MouseLeftButtonDown="Header_Click"/>
 
-                                <TextBlock Grid.Column="4" 
+                                <TextBlock x:Name="Header_Size" Grid.Column="4" 
+                                           Tag="Размер"
                                            Text="Размер" 
                                            FontWeight="SemiBold"
                                            Foreground="#666666"
                                            FontSize="12"
-                                           MaxHeight="100"
-                                           HorizontalAlignment="Right"/>
+                                           HorizontalAlignment="Right"
+                                           Cursor="Hand"
+                                           MouseLeftButtonDown="Header_Click"/>
 
-                                <TextBlock Grid.Column="5" 
+                                <TextBlock x:Name="Header_Status" Grid.Column="5" 
+                                           Tag="Статус"
                                            Text="Статус" 
                                            FontWeight="SemiBold"
                                            Foreground="#666666"
                                            FontSize="12"
-                                           HorizontalAlignment="Center"/>
+                                           HorizontalAlignment="Center"
+                                           Cursor="Hand"
+                                           MouseLeftButtonDown="Header_Click"/>
                             </Grid>
                         </Border>
 
@@ -304,12 +317,6 @@
                                   ScrollViewer.VerticalScrollBarVisibility="Auto">
                             <ListView.View>
                                 <GridView>
-                                    <GridView.ColumnHeaderContainerStyle>
-                                        <Style TargetType="GridViewColumnHeader">
-                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                        </Style>
-                                    </GridView.ColumnHeaderContainerStyle>
-
                                     <GridViewColumn Width="45">
                                         <GridViewColumn.CellTemplate>
                                             <DataTemplate>

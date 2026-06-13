@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -11,6 +12,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input;
 using WPFAPP.Managers;
 using WPFAPP.Utils;
 
@@ -26,6 +28,8 @@ namespace WPFAPP.Pages
         private ListSortDirection _lastDirection = ListSortDirection.Ascending;
         private Dictionary<GridViewColumnHeader, string> _originalHeaders = new Dictionary<GridViewColumnHeader, string>();
         public event PropertyChangedEventHandler PropertyChanged;
+        private TextBlock _lastHeaderTextBlock = null;
+        private string _lastSortBy = "Приложение";
 
         public ApplicationPickerWindow()
         {
@@ -34,14 +38,105 @@ namespace WPFAPP.Pages
             _filteredApplications = new ObservableCollection<ApplicationInfo>();
             ApplicationsListView.ItemsSource = _filteredApplications;
             ApplicationsListView.AddHandler(GridViewColumnHeader.ClickEvent,
-       new RoutedEventHandler(GridViewColumnHeader_Click));
+                new RoutedEventHandler(GridViewColumnHeader_Click));
+
             ApplicationInfo.SelectionChanged += () =>
             {
                 Dispatcher.Invoke(() => UpdateSelectionCount());
             };
 
+            // Подписываемся на изменение фильтрации для обновления пустого списка
+            ((INotifyCollectionChanged)_filteredApplications).CollectionChanged += (s, e) =>
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    bool isEmpty = _filteredApplications.Count == 0;
+                    EmptyListPanel.Visibility = isEmpty ? Visibility.Visible : Visibility.Collapsed;
+                });
+            };
+
             LoadApplicationsAsync();
         }
+
+
+       
+        // Добавьте этот метод в класс ApplicationPickerWindow
+        private void Header_Click(object sender, MouseButtonEventArgs e)
+        {
+            var headerTextBlock = sender as TextBlock;
+            if (headerTextBlock == null) return;
+
+            string sortBy = headerTextBlock.Tag.ToString();
+            ListSortDirection direction;
+
+            if (_lastHeaderTextBlock == headerTextBlock)
+            {
+                direction = _lastDirection == ListSortDirection.Ascending
+                    ? ListSortDirection.Descending
+                    : ListSortDirection.Ascending;
+            }
+            else
+            {
+                direction = ListSortDirection.Ascending;
+
+                // Убираем стрелку с предыдущего заголовка
+                if (_lastHeaderTextBlock != null)
+                {
+                    _lastHeaderTextBlock.Text = _lastSortBy;
+                }
+            }
+
+            // Добавляем стрелку
+            string arrow = direction == ListSortDirection.Ascending ? " ▲" : " ▼";
+            headerTextBlock.Text = sortBy + arrow;
+
+            _lastHeaderTextBlock = headerTextBlock;
+            _lastSortBy = sortBy;
+            _lastDirection = direction;
+
+            // Выполняем сортировку
+            Sort(sortBy, direction);
+        }
+
+        // Обновите существующий метод Sort
+        private void Sort(string sortBy, ListSortDirection direction)
+        {
+            // Убираем возможные стрелки из имени колонки
+            sortBy = sortBy.Replace(" ▲", "").Replace(" ▼", "").Trim();
+
+            var collectionView = CollectionViewSource.GetDefaultView(_filteredApplications);
+
+            if (collectionView != null)
+            {
+                collectionView.SortDescriptions.Clear();
+
+                switch (sortBy)
+                {
+                    case "Приложение":
+                        collectionView.SortDescriptions.Add(new SortDescription("Name", direction));
+                        break;
+                    case "Файл":
+                        collectionView.SortDescriptions.Add(new SortDescription("FileName", direction));
+                        break;
+                    case "Путь":
+                        collectionView.SortDescriptions.Add(new SortDescription("FilePath", direction));
+                        break;
+                    case "Размер":
+                        collectionView.SortDescriptions.Add(new SortDescription("Size", direction));
+                        break;
+                    case "Статус":
+                        collectionView.SortDescriptions.Add(new SortDescription("Status", direction));
+                        break;
+                    default:
+                        collectionView.SortDescriptions.Add(new SortDescription("Name", direction));
+                        break;
+                }
+
+                collectionView.Refresh();
+            }
+        }
+
+
 
         private async void LoadApplicationsAsync()
         {
@@ -161,41 +256,6 @@ namespace WPFAPP.Pages
             _lastHeaderClicked = headerClicked;
             _lastDirection = direction;
         }
-
-        private void Sort(string sortBy, ListSortDirection direction)
-        {
-            // Убираем возможные стрелки из имени колонки
-            sortBy = sortBy.Replace(" ▲", "").Replace(" ▼", "").Trim();
-
-            ICollectionView dataView = CollectionViewSource.GetDefaultView(_filteredApplications);
-
-            dataView.SortDescriptions.Clear();
-
-            switch (sortBy)
-            {
-                case "Приложение":
-                    dataView.SortDescriptions.Add(new SortDescription("Name", direction));
-                    break;
-                case "Файл":
-                    dataView.SortDescriptions.Add(new SortDescription("FileName", direction));
-                    break;
-                case "Путь":
-                    dataView.SortDescriptions.Add(new SortDescription("FilePath", direction));
-                    break;
-                case "Размер":
-                    dataView.SortDescriptions.Add(new SortDescription("Size", direction));
-                    break;
-                case "Статус":
-                    dataView.SortDescriptions.Add(new SortDescription("Status", direction));
-                    break;
-                default:
-                    dataView.SortDescriptions.Add(new SortDescription("Name", direction));
-                    break;
-            }
-
-            dataView.Refresh();
-        }
-
 
         private List<ApplicationInfo> ScanInstalledFromRegistry()
         {
@@ -694,29 +754,8 @@ namespace WPFAPP.Pages
         {
             if (_allApplications == null) return;
 
-            _filteredApplications.Clear();
-
             string search = SearchTextBox.Text?.ToLower() ?? "";
-
-            if (string.IsNullOrWhiteSpace(search))
-            {
-                foreach (var app in _allApplications)
-                {
-                    _filteredApplications.Add(app);
-                }
-            }
-            else
-            {
-                foreach (var app in _allApplications.Where(a =>
-                    a.Name.ToLower().Contains(search) ||
-                    a.FileName.ToLower().Contains(search) ||
-                    a.FilePath.ToLower().Contains(search)))
-                {
-                    _filteredApplications.Add(app);
-                }
-            }
-
-            UpdateSelectionCount();
+            FilterApplications(search);
         }
 
 
@@ -735,11 +774,10 @@ namespace WPFAPP.Pages
             }
             else
             {
-                string search = searchText.ToLower();
                 var filtered = _allApplications.Where(a =>
-                    a.Name.ToLower().Contains(search) ||
-                    a.FileName.ToLower().Contains(search) ||
-                    a.FilePath.ToLower().Contains(search)
+                    a.Name.ToLower().Contains(searchText) ||
+                    a.FileName.ToLower().Contains(searchText) ||
+                    a.FilePath.ToLower().Contains(searchText)
                 ).ToList();
 
                 foreach (var app in filtered)
@@ -748,7 +786,18 @@ namespace WPFAPP.Pages
                 }
             }
 
+            // Применяем сохраненную сортировку к отфильтрованным данным
+            if (_lastHeaderClicked != null && _originalHeaders.ContainsKey(_lastHeaderClicked))
+            {
+                string sortBy = _originalHeaders[_lastHeaderClicked];
+                Sort(sortBy, _lastDirection);
+            }
+
             UpdateSelectionCount();
+
+            // Показываем/скрываем панель "пустой список"
+            bool isEmpty = _filteredApplications.Count == 0;
+            EmptyListPanel.Visibility = isEmpty ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void CheckBox_Click(object sender, RoutedEventArgs e)

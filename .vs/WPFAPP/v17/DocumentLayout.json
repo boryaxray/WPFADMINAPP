@@ -1,101 +1,101 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\ApplicationControlService\\WPFAPP\\",
+  "WorkspaceRootPath": "C:\\ApplicationControlService\\WPFADMINAPP\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfapp\\pages\\servicepage.xaml.cs||{8B382828-6202-11D1-8870-0000F87579D2}|",
+      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfadminapp\\pages\\servicepage.xaml.cs||{8B382828-6202-11D1-8870-0000F87579D2}|",
       "RelativeMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|solutionrelative:pages\\servicepage.xaml.cs||{8B382828-6202-11D1-8870-0000F87579D2}|"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfapp\\pages\\servicepage.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfadminapp\\pages\\servicepage.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
       "RelativeMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|solutionrelative:pages\\servicepage.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfapp\\pages\\whitelistpage.xaml.cs||{8B382828-6202-11D1-8870-0000F87579D2}|",
-      "RelativeMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|solutionrelative:pages\\whitelistpage.xaml.cs||{8B382828-6202-11D1-8870-0000F87579D2}|"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfapp\\pages\\whitelistpage.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfadminapp\\pages\\whitelistpage.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
       "RelativeMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|solutionrelative:pages\\whitelistpage.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfapp\\wpfapp.csproj||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|",
-      "RelativeMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|solutionrelative:wpfapp.csproj||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfapp\\wpfapp.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
-      "RelativeMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|solutionrelative:wpfapp.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfapp\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfadminapp\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
       "RelativeMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|solutionrelative:mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfapp\\pages\\applicationpickerwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfadminapp\\pages\\applicationpickerwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
       "RelativeMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|solutionrelative:pages\\applicationpickerwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfapp\\managers\\hashchecker.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|solutionrelative:managers\\hashchecker.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfapp\\pages\\logspage.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfadminapp\\pages\\logspage.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
       "RelativeMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|solutionrelative:pages\\logspage.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfapp\\pages\\applicationpickerwindow.xaml.cs||{8B382828-6202-11D1-8870-0000F87579D2}|",
+      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfadminapp\\pages\\applicationpickerwindow.xaml.cs||{8B382828-6202-11D1-8870-0000F87579D2}|",
       "RelativeMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|solutionrelative:pages\\applicationpickerwindow.xaml.cs||{8B382828-6202-11D1-8870-0000F87579D2}|"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfapp\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfadminapp\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|solutionrelative:mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfapp\\assemblyinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfadminapp\\pages\\whitelistpage.xaml.cs||{8B382828-6202-11D1-8870-0000F87579D2}|",
+      "RelativeMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|solutionrelative:pages\\whitelistpage.xaml.cs||{8B382828-6202-11D1-8870-0000F87579D2}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfadminapp\\wpfapp.csproj||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|",
+      "RelativeMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|solutionrelative:wpfapp.csproj||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfadminapp\\wpfapp.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|solutionrelative:wpfapp.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfadminapp\\managers\\hashchecker.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|solutionrelative:managers\\hashchecker.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfadminapp\\assemblyinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|solutionrelative:assemblyinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfapp\\managers\\whitelistmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfadminapp\\managers\\whitelistmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|solutionrelative:managers\\whitelistmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfapp\\pages\\whitelistitem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfadminapp\\pages\\whitelistitem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|solutionrelative:pages\\whitelistitem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfapp\\readme.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}",
+      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfadminapp\\readme.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}",
       "RelativeMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|solutionrelative:readme.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfapp\\managers\\servicemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfadminapp\\managers\\servicemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|solutionrelative:managers\\servicemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|C:\\ApplicationControlService\\WPFAPP\\properties\\settings.settings||{6D2695F9-5365-4A78-89ED-F205C045BFE6}",
+      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|C:\\ApplicationControlService\\WPFADMINAPP\\properties\\settings.settings||{6D2695F9-5365-4A78-89ED-F205C045BFE6}",
       "RelativeMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|solutionrelative:properties\\settings.settings||{6D2695F9-5365-4A78-89ED-F205C045BFE6}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfapp\\managers\\logreader.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfadminapp\\managers\\logreader.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|solutionrelative:managers\\logreader.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfapp\\pages\\logspage.xaml.cs||{8B382828-6202-11D1-8870-0000F87579D2}|",
+      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfadminapp\\pages\\logspage.xaml.cs||{8B382828-6202-11D1-8870-0000F87579D2}|",
       "RelativeMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|solutionrelative:pages\\logspage.xaml.cs||{8B382828-6202-11D1-8870-0000F87579D2}|"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfapp\\app.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfadminapp\\app.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
       "RelativeMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|solutionrelative:app.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfapp\\app.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfadminapp\\app.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|solutionrelative:app.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfapp\\utils\\hashutils.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfadminapp\\utils\\hashutils.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|solutionrelative:utils\\hashutils.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfapp\\converters\\indexconverter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|c:\\applicationcontrolservice\\wpfadminapp\\converters\\indexconverter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{31BB5F16-70E1-4958-93A2-0D7AEBC5C780}|WPFAPP.csproj|solutionrelative:converters\\indexconverter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
@@ -109,7 +109,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 16,
+          "SelectedChildIndex": 10,
           "Children": [
             {
               "$type": "Bookmark",
@@ -121,81 +121,11 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
-              "Title": "ApplicationPickerWindow.xaml.cs",
-              "DocumentMoniker": "C:\\ApplicationControlService\\WPFAPP\\Pages\\ApplicationPickerWindow.xaml.cs",
-              "RelativeDocumentMoniker": "Pages\\ApplicationPickerWindow.xaml.cs",
-              "ToolTip": "C:\\ApplicationControlService\\WPFAPP\\Pages\\ApplicationPickerWindow.xaml.cs",
-              "RelativeToolTip": "Pages\\ApplicationPickerWindow.xaml.cs",
-              "ViewState": "AgIAAOIDAAAAAAAAAAAAAOABAABAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-25T11:35:15.942Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "WhiteListPage.xaml",
-              "DocumentMoniker": "C:\\ApplicationControlService\\WPFAPP\\Pages\\WhiteListPage.xaml",
-              "RelativeDocumentMoniker": "Pages\\WhiteListPage.xaml",
-              "ToolTip": "C:\\ApplicationControlService\\WPFAPP\\Pages\\WhiteListPage.xaml",
-              "RelativeToolTip": "Pages\\WhiteListPage.xaml",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2025-12-17T21:01:12.95Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 20,
-              "Title": "App.xaml",
-              "DocumentMoniker": "C:\\ApplicationControlService\\WPFAPP\\App.xaml",
-              "RelativeDocumentMoniker": "App.xaml",
-              "ToolTip": "C:\\ApplicationControlService\\WPFAPP\\App.xaml",
-              "RelativeToolTip": "App.xaml",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2025-12-17T21:01:50.201Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 12,
-              "Title": "AssemblyInfo.cs",
-              "DocumentMoniker": "C:\\ApplicationControlService\\WPFAPP\\AssemblyInfo.cs",
-              "RelativeDocumentMoniker": "AssemblyInfo.cs",
-              "ToolTip": "C:\\ApplicationControlService\\WPFAPP\\AssemblyInfo.cs",
-              "RelativeToolTip": "AssemblyInfo.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-19T20:10:56.369Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "MainWindow.xaml",
-              "DocumentMoniker": "C:\\ApplicationControlService\\WPFAPP\\MainWindow.xaml",
-              "RelativeDocumentMoniker": "MainWindow.xaml",
-              "ToolTip": "C:\\ApplicationControlService\\WPFAPP\\MainWindow.xaml",
-              "RelativeToolTip": "MainWindow.xaml",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2025-12-17T20:43:05.932Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 14,
-              "Title": "WhiteListItem.cs",
-              "DocumentMoniker": "C:\\ApplicationControlService\\WPFAPP\\Pages\\WhiteListItem.cs",
-              "RelativeDocumentMoniker": "Pages\\WhiteListItem.cs",
-              "ToolTip": "C:\\ApplicationControlService\\WPFAPP\\Pages\\WhiteListItem.cs",
-              "RelativeToolTip": "Pages\\WhiteListItem.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAHgAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-19T20:20:44.853Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 9,
               "Title": "WPFAPP",
-              "DocumentMoniker": "C:\\ApplicationControlService\\WPFAPP\\WPFAPP.csproj",
+              "DocumentMoniker": "C:\\ApplicationControlService\\WPFADMINAPP\\WPFAPP.csproj",
               "RelativeDocumentMoniker": "WPFAPP.csproj",
-              "ToolTip": "C:\\ApplicationControlService\\WPFAPP\\WPFAPP.csproj",
+              "ToolTip": "C:\\ApplicationControlService\\WPFADMINAPP\\WPFAPP.csproj",
               "RelativeToolTip": "WPFAPP.csproj",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
               "WhenOpened": "2026-01-17T09:57:23.439Z"
@@ -204,9 +134,9 @@
               "$type": "Document",
               "DocumentIndex": 13,
               "Title": "WhiteListManager.cs",
-              "DocumentMoniker": "C:\\ApplicationControlService\\WPFAPP\\Managers\\WhiteListManager.cs",
+              "DocumentMoniker": "C:\\ApplicationControlService\\WPFADMINAPP\\Managers\\WhiteListManager.cs",
               "RelativeDocumentMoniker": "Managers\\WhiteListManager.cs",
-              "ToolTip": "C:\\ApplicationControlService\\WPFAPP\\Managers\\WhiteListManager.cs",
+              "ToolTip": "C:\\ApplicationControlService\\WPFADMINAPP\\Managers\\WhiteListManager.cs",
               "RelativeToolTip": "Managers\\WhiteListManager.cs",
               "ViewState": "AgIAAEoBAAAAAAAAAAAiwG4BAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -214,13 +144,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 7,
               "Title": "MainWindow.xaml.cs",
-              "DocumentMoniker": "C:\\ApplicationControlService\\WPFAPP\\MainWindow.xaml.cs",
+              "DocumentMoniker": "C:\\ApplicationControlService\\WPFADMINAPP\\MainWindow.xaml.cs",
               "RelativeDocumentMoniker": "MainWindow.xaml.cs",
-              "ToolTip": "C:\\ApplicationControlService\\WPFAPP\\MainWindow.xaml.cs",
+              "ToolTip": "C:\\ApplicationControlService\\WPFADMINAPP\\MainWindow.xaml.cs",
               "RelativeToolTip": "MainWindow.xaml.cs",
-              "ViewState": "AgIAAIEAAAAAAAAAAAAQwKQAAAApAAAAAAAAAA==",
+              "ViewState": "AgIAAKUAAAAAAAAAAAAAAMcAAAANAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-12-17T20:43:04.721Z"
             },
@@ -228,32 +158,31 @@
               "$type": "Document",
               "DocumentIndex": 1,
               "Title": "ServicePage.xaml",
-              "DocumentMoniker": "C:\\ApplicationControlService\\WPFAPP\\Pages\\ServicePage.xaml",
+              "DocumentMoniker": "C:\\ApplicationControlService\\WPFADMINAPP\\Pages\\ServicePage.xaml",
               "RelativeDocumentMoniker": "Pages\\ServicePage.xaml",
-              "ToolTip": "C:\\ApplicationControlService\\WPFAPP\\Pages\\ServicePage.xaml",
+              "ToolTip": "C:\\ApplicationControlService\\WPFADMINAPP\\Pages\\ServicePage.xaml",
               "RelativeToolTip": "Pages\\ServicePage.xaml",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2025-12-17T21:06:51.378Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-17T21:06:51.378Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 5,
               "Title": "LogsPage.xaml",
-              "DocumentMoniker": "C:\\ApplicationControlService\\WPFAPP\\Pages\\LogsPage.xaml",
+              "DocumentMoniker": "C:\\ApplicationControlService\\WPFADMINAPP\\Pages\\LogsPage.xaml",
               "RelativeDocumentMoniker": "Pages\\LogsPage.xaml",
-              "ToolTip": "C:\\ApplicationControlService\\WPFAPP\\Pages\\LogsPage.xaml",
+              "ToolTip": "C:\\ApplicationControlService\\WPFADMINAPP\\Pages\\LogsPage.xaml",
               "RelativeToolTip": "Pages\\LogsPage.xaml",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
               "WhenOpened": "2025-12-17T21:06:13.064Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 11,
               "Title": "HashChecker.cs",
-              "DocumentMoniker": "C:\\ApplicationControlService\\WPFAPP\\Managers\\HashChecker.cs",
+              "DocumentMoniker": "C:\\ApplicationControlService\\WPFADMINAPP\\Managers\\HashChecker.cs",
               "RelativeDocumentMoniker": "Managers\\HashChecker.cs",
-              "ToolTip": "C:\\ApplicationControlService\\WPFAPP\\Managers\\HashChecker.cs",
+              "ToolTip": "C:\\ApplicationControlService\\WPFADMINAPP\\Managers\\HashChecker.cs",
               "RelativeToolTip": "Managers\\HashChecker.cs",
               "ViewState": "AgIAABkAAAAAAAAAAAAhwO8AAAAnAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -261,11 +190,11 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 10,
               "Title": "WPFAPP.csproj",
-              "DocumentMoniker": "C:\\ApplicationControlService\\WPFAPP\\WPFAPP.csproj",
+              "DocumentMoniker": "C:\\ApplicationControlService\\WPFADMINAPP\\WPFAPP.csproj",
               "RelativeDocumentMoniker": "WPFAPP.csproj",
-              "ToolTip": "C:\\ApplicationControlService\\WPFAPP\\WPFAPP.csproj",
+              "ToolTip": "C:\\ApplicationControlService\\WPFADMINAPP\\WPFAPP.csproj",
               "RelativeToolTip": "WPFAPP.csproj",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
@@ -273,48 +202,116 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 8,
               "Title": "WhiteListPage.xaml.cs",
-              "DocumentMoniker": "C:\\ApplicationControlService\\WPFAPP\\Pages\\WhiteListPage.xaml.cs",
+              "DocumentMoniker": "C:\\ApplicationControlService\\WPFADMINAPP\\Pages\\WhiteListPage.xaml.cs",
               "RelativeDocumentMoniker": "Pages\\WhiteListPage.xaml.cs",
-              "ToolTip": "C:\\ApplicationControlService\\WPFAPP\\Pages\\WhiteListPage.xaml.cs",
+              "ToolTip": "C:\\ApplicationControlService\\WPFADMINAPP\\Pages\\WhiteListPage.xaml.cs",
               "RelativeToolTip": "Pages\\WhiteListPage.xaml.cs",
               "ViewState": "AgIAANAAAAAAAAAAAAAAAPAAAAAsAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-17T21:04:46.282Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-17T21:04:46.282Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 0,
               "Title": "ServicePage.xaml.cs",
-              "DocumentMoniker": "C:\\ApplicationControlService\\WPFAPP\\Pages\\ServicePage.xaml.cs",
+              "DocumentMoniker": "C:\\ApplicationControlService\\WPFADMINAPP\\Pages\\ServicePage.xaml.cs",
               "RelativeDocumentMoniker": "Pages\\ServicePage.xaml.cs",
-              "ToolTip": "C:\\ApplicationControlService\\WPFAPP\\Pages\\ServicePage.xaml.cs",
+              "ToolTip": "C:\\ApplicationControlService\\WPFADMINAPP\\Pages\\ServicePage.xaml.cs",
               "RelativeToolTip": "Pages\\ServicePage.xaml.cs",
-              "ViewState": "AgIAANoBAAAAAAAAAAAAwGUAAAAMAAAAAAAAAA==",
+              "ViewState": "AgIAAIMAAAAAAAAAAAAgwJsAAAAzAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-12-17T21:07:06.443Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 4,
               "Title": "ApplicationPickerWindow.xaml",
-              "DocumentMoniker": "C:\\ApplicationControlService\\WPFAPP\\Pages\\ApplicationPickerWindow.xaml",
+              "DocumentMoniker": "C:\\ApplicationControlService\\WPFADMINAPP\\Pages\\ApplicationPickerWindow.xaml",
               "RelativeDocumentMoniker": "Pages\\ApplicationPickerWindow.xaml",
-              "ToolTip": "C:\\ApplicationControlService\\WPFAPP\\Pages\\ApplicationPickerWindow.xaml",
+              "ToolTip": "C:\\ApplicationControlService\\WPFADMINAPP\\Pages\\ApplicationPickerWindow.xaml",
               "RelativeToolTip": "Pages\\ApplicationPickerWindow.xaml",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
               "WhenOpened": "2026-04-25T11:33:26.085Z"
             },
             {
               "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "ApplicationPickerWindow.xaml.cs",
+              "DocumentMoniker": "C:\\ApplicationControlService\\WPFADMINAPP\\Pages\\ApplicationPickerWindow.xaml.cs",
+              "RelativeDocumentMoniker": "Pages\\ApplicationPickerWindow.xaml.cs",
+              "ToolTip": "C:\\ApplicationControlService\\WPFADMINAPP\\Pages\\ApplicationPickerWindow.xaml.cs",
+              "RelativeToolTip": "Pages\\ApplicationPickerWindow.xaml.cs",
+              "ViewState": "AgIAAEYAAAAAAAAAAAAgwAIBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-25T11:35:15.942Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "AssemblyInfo.cs",
+              "DocumentMoniker": "C:\\ApplicationControlService\\WPFADMINAPP\\AssemblyInfo.cs",
+              "RelativeDocumentMoniker": "AssemblyInfo.cs",
+              "ToolTip": "C:\\ApplicationControlService\\WPFADMINAPP\\AssemblyInfo.cs",
+              "RelativeToolTip": "AssemblyInfo.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-19T20:10:56.369Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "WhiteListPage.xaml",
+              "DocumentMoniker": "C:\\ApplicationControlService\\WPFADMINAPP\\Pages\\WhiteListPage.xaml",
+              "RelativeDocumentMoniker": "Pages\\WhiteListPage.xaml",
+              "ToolTip": "C:\\ApplicationControlService\\WPFADMINAPP\\Pages\\WhiteListPage.xaml",
+              "RelativeToolTip": "Pages\\WhiteListPage.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2025-12-17T21:01:12.95Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "MainWindow.xaml",
+              "DocumentMoniker": "C:\\ApplicationControlService\\WPFADMINAPP\\MainWindow.xaml",
+              "RelativeDocumentMoniker": "MainWindow.xaml",
+              "ToolTip": "C:\\ApplicationControlService\\WPFADMINAPP\\MainWindow.xaml",
+              "RelativeToolTip": "MainWindow.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2025-12-17T20:43:05.932Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "WhiteListItem.cs",
+              "DocumentMoniker": "C:\\ApplicationControlService\\WPFADMINAPP\\Pages\\WhiteListItem.cs",
+              "RelativeDocumentMoniker": "Pages\\WhiteListItem.cs",
+              "ToolTip": "C:\\ApplicationControlService\\WPFADMINAPP\\Pages\\WhiteListItem.cs",
+              "RelativeToolTip": "Pages\\WhiteListItem.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAHgAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-19T20:20:44.853Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "App.xaml",
+              "DocumentMoniker": "C:\\ApplicationControlService\\WPFADMINAPP\\App.xaml",
+              "RelativeDocumentMoniker": "App.xaml",
+              "ToolTip": "C:\\ApplicationControlService\\WPFADMINAPP\\App.xaml",
+              "RelativeToolTip": "App.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2025-12-17T21:01:50.201Z"
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 19,
               "Title": "LogsPage.xaml.cs",
-              "DocumentMoniker": "C:\\ApplicationControlService\\WPFAPP\\Pages\\LogsPage.xaml.cs",
+              "DocumentMoniker": "C:\\ApplicationControlService\\WPFADMINAPP\\Pages\\LogsPage.xaml.cs",
               "RelativeDocumentMoniker": "Pages\\LogsPage.xaml.cs",
-              "ToolTip": "C:\\ApplicationControlService\\WPFAPP\\Pages\\LogsPage.xaml.cs",
+              "ToolTip": "C:\\ApplicationControlService\\WPFADMINAPP\\Pages\\LogsPage.xaml.cs",
               "RelativeToolTip": "Pages\\LogsPage.xaml.cs",
               "ViewState": "AgIAAAgAAAAAAAAAAAAxwAoAAAA+AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -324,9 +321,9 @@
               "$type": "Document",
               "DocumentIndex": 16,
               "Title": "ServiceManager.cs",
-              "DocumentMoniker": "C:\\ApplicationControlService\\WPFAPP\\Managers\\ServiceManager.cs",
+              "DocumentMoniker": "C:\\ApplicationControlService\\WPFADMINAPP\\Managers\\ServiceManager.cs",
               "RelativeDocumentMoniker": "Managers\\ServiceManager.cs",
-              "ToolTip": "C:\\ApplicationControlService\\WPFAPP\\Managers\\ServiceManager.cs",
+              "ToolTip": "C:\\ApplicationControlService\\WPFADMINAPP\\Managers\\ServiceManager.cs",
               "RelativeToolTip": "Managers\\ServiceManager.cs",
               "ViewState": "AgIAADABAAAAAAAAAAAtwFkBAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -336,9 +333,9 @@
               "$type": "Document",
               "DocumentIndex": 15,
               "Title": "README.md",
-              "DocumentMoniker": "C:\\ApplicationControlService\\WPFAPP\\README.md",
+              "DocumentMoniker": "C:\\ApplicationControlService\\WPFADMINAPP\\README.md",
               "RelativeDocumentMoniker": "README.md",
-              "ToolTip": "C:\\ApplicationControlService\\WPFAPP\\README.md",
+              "ToolTip": "C:\\ApplicationControlService\\WPFADMINAPP\\README.md",
               "RelativeToolTip": "README.md",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAEsAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
@@ -348,9 +345,9 @@
               "$type": "Document",
               "DocumentIndex": 18,
               "Title": "LogReader.cs",
-              "DocumentMoniker": "C:\\ApplicationControlService\\WPFAPP\\Managers\\LogReader.cs",
+              "DocumentMoniker": "C:\\ApplicationControlService\\WPFADMINAPP\\Managers\\LogReader.cs",
               "RelativeDocumentMoniker": "Managers\\LogReader.cs",
-              "ToolTip": "C:\\ApplicationControlService\\WPFAPP\\Managers\\LogReader.cs",
+              "ToolTip": "C:\\ApplicationControlService\\WPFADMINAPP\\Managers\\LogReader.cs",
               "RelativeToolTip": "Managers\\LogReader.cs",
               "ViewState": "AgIAAEYAAAAAAAAAAAAAADAAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -360,9 +357,9 @@
               "$type": "Document",
               "DocumentIndex": 17,
               "Title": "Settings.settings",
-              "DocumentMoniker": "C:\\ApplicationControlService\\WPFAPP\\Properties\\Settings.settings",
+              "DocumentMoniker": "C:\\ApplicationControlService\\WPFADMINAPP\\Properties\\Settings.settings",
               "RelativeDocumentMoniker": "Properties\\Settings.settings",
-              "ToolTip": "C:\\ApplicationControlService\\WPFAPP\\Properties\\Settings.settings",
+              "ToolTip": "C:\\ApplicationControlService\\WPFADMINAPP\\Properties\\Settings.settings",
               "RelativeToolTip": "Properties\\Settings.settings",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002767|",
               "WhenOpened": "2026-01-17T10:16:45.784Z"
@@ -371,9 +368,9 @@
               "$type": "Document",
               "DocumentIndex": 23,
               "Title": "IndexConverter.cs",
-              "DocumentMoniker": "C:\\ApplicationControlService\\WPFAPP\\Converters\\IndexConverter.cs",
+              "DocumentMoniker": "C:\\ApplicationControlService\\WPFADMINAPP\\Converters\\IndexConverter.cs",
               "RelativeDocumentMoniker": "Converters\\IndexConverter.cs",
-              "ToolTip": "C:\\ApplicationControlService\\WPFAPP\\Converters\\IndexConverter.cs",
+              "ToolTip": "C:\\ApplicationControlService\\WPFADMINAPP\\Converters\\IndexConverter.cs",
               "RelativeToolTip": "Converters\\IndexConverter.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAACoAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -383,9 +380,9 @@
               "$type": "Document",
               "DocumentIndex": 22,
               "Title": "HashUtils.cs",
-              "DocumentMoniker": "C:\\ApplicationControlService\\WPFAPP\\Utils\\HashUtils.cs",
+              "DocumentMoniker": "C:\\ApplicationControlService\\WPFADMINAPP\\Utils\\HashUtils.cs",
               "RelativeDocumentMoniker": "Utils\\HashUtils.cs",
-              "ToolTip": "C:\\ApplicationControlService\\WPFAPP\\Utils\\HashUtils.cs",
+              "ToolTip": "C:\\ApplicationControlService\\WPFADMINAPP\\Utils\\HashUtils.cs",
               "RelativeToolTip": "Utils\\HashUtils.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAcwDsAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -395,9 +392,9 @@
               "$type": "Document",
               "DocumentIndex": 21,
               "Title": "App.xaml.cs",
-              "DocumentMoniker": "C:\\ApplicationControlService\\WPFAPP\\App.xaml.cs",
+              "DocumentMoniker": "C:\\ApplicationControlService\\WPFADMINAPP\\App.xaml.cs",
               "RelativeDocumentMoniker": "App.xaml.cs",
-              "ToolTip": "C:\\ApplicationControlService\\WPFAPP\\App.xaml.cs",
+              "ToolTip": "C:\\ApplicationControlService\\WPFADMINAPP\\App.xaml.cs",
               "RelativeToolTip": "App.xaml.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAACAAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",

@@ -151,30 +151,29 @@ namespace WPFAPP.Pages
                         InstallBtn.Content = "Установить";
                         InstallBtn.IsEnabled = true;
                     }
+                     await System.Threading.Tasks.Task.Delay(5000);
+                    LoadStatus();
+                    ConfigureRecoveryViaRegistry();
+                    //Проверяем настройки восстановления
+                    await System.Threading.Tasks.Task.Delay(2000);
+                    string recoveryInfo = ServiceManager.GetServiceRecoveryInfo();
+
+                    if (recoveryInfo.Contains("restart/5000"))
+                    {
+                        MessageBox.Show(
+                            "Служба успешно установлена!\n\nСамовосстановление настроено:\n" +
+                            "• 3 попытки перезапуска при сбое\n" +
+                            "• Интервал: 5 секунд",
+                            "Успех",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+                    }
+                   
                 }
-                await System.Threading.Tasks.Task.Run(() =>
-                {
-                    ServiceManager.InstallService(_logsPath, _whiteListPath);
-                });
 
-                await System.Threading.Tasks.Task.Delay(5000);
-                LoadStatus();
 
-                // ДОБАВЛЯЕМ: Проверяем настройки восстановления
-                await System.Threading.Tasks.Task.Delay(2000);
-                string recoveryInfo = ServiceManager.GetServiceRecoveryInfo();
 
-                if (recoveryInfo.Contains("restart/5000"))
-                {
-                    MessageBox.Show(
-                        "Служба успешно установлена!\n\nСамовосстановление настроено:\n" +
-                        "• 3 попытки перезапуска при сбое\n" +
-                        "• Интервал: 5 секунд",
-                        "Успех",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-                ConfigureRecoveryViaRegistry();
+
             }
             catch (Exception ex)
             {

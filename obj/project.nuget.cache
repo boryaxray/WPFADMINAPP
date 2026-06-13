@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "OsQeP1s9AN0=",
+  "dgSpecHash": "ix+yQ2TC9+8=",
   "success": true,
-  "projectFilePath": "C:\\ApplicationControlService\\WPFAPP\\WPFAPP.csproj",
+  "projectFilePath": "C:\\ApplicationControlService\\WPFADMINAPP\\WPFAPP.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\alek7\\.nuget\\packages\\materialdesigncolors\\5.2.1\\materialdesigncolors.5.2.1.nupkg.sha512",
     "C:\\Users\\alek7\\.nuget\\packages\\materialdesignthemes\\5.2.0\\materialdesignthemes.5.2.0.nupkg.sha512",
