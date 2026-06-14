@@ -67,33 +67,53 @@ namespace WPFAPP.Pages
             }
         }
 
-        private void LoadStatus()
+        private async void LoadStatus()
         {
             try
             {
-                string status = ServiceManager.GetServiceStatus();
-                StatusText.Text = $"Статус: {status}";
+                string status = await Task.Run(() => ServiceManager.GetServiceStatus());
 
-                switch (status)
+                await Dispatcher.InvokeAsync(() =>
                 {
-                    case "Running":
-                        StatusIcon.Fill = Brushes.Green;
-                        break;
-                    case "Stopped":
-                        StatusIcon.Fill = Brushes.Orange;
-                        break;
-                    case "Not Installed":
-                        StatusIcon.Fill = Brushes.Red;
-                        break;
-                    default:
-                        StatusIcon.Fill = Brushes.Gray;
-                        break;
-                }
+                    string displayText = status switch
+                    {
+                        "Running" => "Работает",
+                        "Stopped" => "Остановлена",
+                        "Not Installed" => "Не установлена",
+                        "StopPending" => "Останавливается",
+                        "StartPending" => "Запускается",
+                        _ => status
+                    };
+
+                    StatusText.Text = $"Статус: {displayText}";
+
+                    switch (status)
+                    {
+                        case "Running":
+                            StatusIcon.Fill = Brushes.Green;
+                            break;
+                        case "Stopped":
+                            StatusIcon.Fill = Brushes.Orange;
+                            break;
+                        case "Not Installed":
+                            StatusIcon.Fill = Brushes.Red;
+                            break;
+                        default:
+                            StatusIcon.Fill = Brushes.Gray;
+                            break;
+                    }
+
+                    Debug.WriteLine($"ServicePage status: {status}");
+                });
             }
             catch (Exception ex)
             {
-                StatusText.Text = $"Ошибка: {ex.Message}";
-                StatusIcon.Fill = Brushes.Red;
+                Debug.WriteLine($"LoadStatus error: {ex.Message}");
+                await Dispatcher.InvokeAsync(() =>
+                {
+                    StatusText.Text = "Ошибка";
+                    StatusIcon.Fill = Brushes.Red;
+                });
             }
         }
 

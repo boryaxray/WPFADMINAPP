@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -8,8 +9,6 @@ namespace WPFAPP.Pages
 {
     public partial class LogsPage : Page
     {
-        private string _logPath = @"C:\ProgramData\AppControl\";
-
         public LogsPage()
         {
             InitializeComponent();
@@ -18,14 +17,20 @@ namespace WPFAPP.Pages
 
         private void UpdateLogPath()
         {
-            // Можно обновить путь, если был выбран другой каталог
-            _logPath = Path.Combine(LogReader.GetLogDirectory(), "detailed.log");
-
-            // Обновляем TextBlock с путем к логам
-            var textBlock = this.FindName("LogPathText") as TextBlock;
-            if (textBlock != null)
+            try
             {
-                textBlock.Text = _logPath;
+                string logDir = ServiceManager.GetLogDirectory();
+                string detailedLogPath = Path.Combine(logDir, "detailed.log");
+
+                var textBlock = this.FindName("LogPathText") as TextBlock;
+                if (textBlock != null)
+                {
+                    textBlock.Text = detailedLogPath;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"UpdateLogPath error: {ex.Message}");
             }
         }
 
@@ -33,7 +38,12 @@ namespace WPFAPP.Pages
         {
             try
             {
-                LogReader.OpenLogsInNotepad();
+                bool success = ServiceManager.OpenLogsInNotepad();
+                if (!success)
+                {
+                    MessageBox.Show("Не удалось открыть логи. Возможно, директория логов недоступна.",
+                        "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
             }
             catch (Exception ex)
             {
@@ -51,13 +61,13 @@ namespace WPFAPP.Pages
             {
                 try
                 {
-                    LogReader.ClearLogs();
+                    ServiceManager.ClearAllLogs();
                     MessageBox.Show("Логи очищены", "Успех",
                         MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка",
+                    MessageBox.Show($"Ошибка очистки логов: {ex.Message}", "Ошибка",
                         MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }

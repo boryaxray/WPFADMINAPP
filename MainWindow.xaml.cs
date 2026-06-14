@@ -29,9 +29,11 @@ namespace WPFAPP
         private void InitializeStatusTimer()
         {
             _statusTimer = new DispatcherTimer();
-            _statusTimer.Interval = TimeSpan.FromSeconds(5);
+            _statusTimer.Interval = TimeSpan.FromSeconds(2); // Каждые 2 секунды
             _statusTimer.Tick += (s, e) => UpdateServiceStatus();
             _statusTimer.Start();
+
+            UpdateServiceStatus();
         }
 
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -140,34 +142,64 @@ namespace WPFAPP
         }
 
         // Обновление статуса службы
-        private void UpdateServiceStatus()
+        private async void UpdateServiceStatus()
         {
             try
             {
-                string status = ServiceManager.GetServiceStatus();
-                ServiceStatusText.Text = status;
+                // Запускаем в отдельном потоке
+                string status = await Task.Run(() => ServiceManager.GetServiceStatus());
 
-                switch (status)
+                // Обновляем UI в главном потоке
+                await Dispatcher.InvokeAsync(() =>
                 {
-                    case "Running":
-                        StatusDot.Fill = Brushes.LimeGreen;
-                        break;
-                    case "Stopped":
-                        StatusDot.Fill = Brushes.Orange;
-                        break;
-                    case "Not Installed":
-                        StatusDot.Fill = Brushes.Red;
-                        break;
-                    default:
-                        StatusDot.Fill = Brushes.Gray;
-                        break;
-                }
-                UpdateProtectionStatus();
+                    string displayText = status switch
+                    {
+                        "Running" => "Работает",
+                        "Stopped" => "Остановлена",
+                        "StopPending" => "Останавливается",
+                        "StartPending" => "Запускается",
+                        "Not Installed" => "Не установлена",
+                        "Error" => "Ошибка",
+                        _ => status
+                    };
+
+                    ServiceStatusText.Text = displayText;
+
+                    switch (status)
+                    {
+                        case "Running":
+                            StatusDot.Fill = Brushes.LimeGreen;
+                            ProtectionStatusText.Text = "🛡️ Защита активна";
+                            ProtectionStatusText.Foreground = new SolidColorBrush(Color.FromRgb(76, 175, 80));
+                            break;
+                        case "Stopped":
+                            StatusDot.Fill = Brushes.Orange;
+                            ProtectionStatusText.Text = "⚠️ Служба остановлена";
+                            ProtectionStatusText.Foreground = new SolidColorBrush(Color.FromRgb(255, 152, 0));
+                            break;
+                        case "Not Installed":
+                            StatusDot.Fill = Brushes.Red;
+                            ProtectionStatusText.Text = "❌ Служба не установлена";
+                            ProtectionStatusText.Foreground = new SolidColorBrush(Color.FromRgb(244, 67, 54));
+                            break;
+                        default:
+                            StatusDot.Fill = Brushes.Gray;
+                            ProtectionStatusText.Text = "❓ Статус защиты неизвестен";
+                            ProtectionStatusText.Foreground = new SolidColorBrush(Color.FromRgb(158, 158, 158));
+                            break;
+                    }
+
+                    Debug.WriteLine($"Status updated: {status}");
+                });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                ServiceStatusText.Text = "Ошибка";
-                StatusDot.Fill = Brushes.Gray;
+                Debug.WriteLine($"UpdateServiceStatus error: {ex.Message}");
+                await Dispatcher.InvokeAsync(() =>
+                {
+                    ServiceStatusText.Text = "Ошибка";
+                    StatusDot.Fill = Brushes.Gray;
+                });
             }
         }
 

@@ -11,7 +11,9 @@ namespace WPFAPP.Managers
     {
         private static readonly string ServiceExePath = "ApplicationControlService.exe";
         private static readonly string ServiceName = "AppControlService";
-
+        private static string _cachedStatus = "Unknown";
+        private static DateTime _lastStatusCheck = DateTime.MinValue;
+        private static readonly TimeSpan _cacheDuration = TimeSpan.FromSeconds(2);
         public static void SetConfigPath(string logsPath, string whiteListPath)
         {
             try
@@ -37,20 +39,69 @@ namespace WPFAPP.Managers
         {
             try
             {
-                using (ServiceController sc = new ServiceController(ServiceName))
+                // Проверяем через SC QUERY (самый надежный способ)
+                string scOutput = RunScQuery();
+
+                if (string.IsNullOrEmpty(scOutput))
+                    return "Not Installed";
+
+                if (scOutput.Contains("STATE") && scOutput.Contains("RUNNING"))
+                    return "Running";
+
+                if (scOutput.Contains("STATE") && scOutput.Contains("STOPPED"))
+                    return "Stopped";
+
+                if (scOutput.Contains("OpenService FAILED") || scOutput.Contains("1060"))
+                    return "Not Installed";
+
+                // Альтернатива - проверка через ServiceController
+                try
                 {
-                    return sc.Status.ToString();
+                    using (var sc = new ServiceController(ServiceName))
+                    {
+                        sc.Refresh();
+                        return sc.Status.ToString();
+                    }
                 }
-            }
-            catch (InvalidOperationException)
-            {
-                return "Not Installed";
+                catch (InvalidOperationException)
+                {
+                    return "Not Installed";
+                }
             }
             catch (Exception ex)
             {
-                return $"Error: {ex.Message}";
+                Debug.WriteLine($"GetServiceStatus error: {ex.Message}");
+                return "Error";
             }
         }
+        private static string RunScQuery()
+        {
+            try
+            {
+                using (Process process = new Process())
+                {
+                    process.StartInfo.FileName = "sc.exe";
+                    process.StartInfo.Arguments = $"query {ServiceName}";
+                    process.StartInfo.UseShellExecute = false;
+                    process.StartInfo.CreateNoWindow = true;
+                    process.StartInfo.RedirectStandardOutput = true;
+                    process.StartInfo.RedirectStandardError = true;
+                    process.StartInfo.StandardOutputEncoding = Encoding.GetEncoding(866);
+
+                    process.Start();
+                    string output = process.StandardOutput.ReadToEnd();
+                    process.WaitForExit(3000);
+
+                    return output;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"RunScQuery error: {ex.Message}");
+                return string.Empty;
+            }
+        }
+
         /*        public static void InstallService(string logsPath = null, string whiteListPath = null)
                 {
                     try
@@ -92,7 +143,7 @@ namespace WPFAPP.Managers
 
         // В файле ServiceManager.cs добавьте/измените метод InstallService:
 
-        public static void InstallService(string logsPath = null, string whiteListPath = null)
+        /*public static void InstallService(string logsPath = null, string whiteListPath = null)
         {
             try
             {
@@ -132,9 +183,43 @@ namespace WPFAPP.Managers
             {
                 throw new Exception($"Ошибка установки службы: {ex.Message}", ex);
             }
+        }*/
+
+        public static void InstallService(string logsPath = null, string whiteListPath = null)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(logsPath))
+                {
+                    logsPath = Properties.Settings.Default.LogsPath;
+                    if (string.IsNullOrEmpty(logsPath))
+                        logsPath = @"C:\ProgramData\AppControl\Logs";
+                }
+
+                if (string.IsNullOrEmpty(whiteListPath))
+                {
+                    whiteListPath = Properties.Settings.Default.WhiteListPath;
+                    if (string.IsNullOrEmpty(whiteListPath))
+                        whiteListPath = @"C:\ProgramData\AppControl\WhiteList";
+                }
+
+                logsPath = logsPath?.Trim().Trim('"');
+                whiteListPath = whiteListPath?.Trim().Trim('"');
+
+                Properties.Settings.Default.LogsPath = logsPath;
+                Properties.Settings.Default.WhiteListPath = whiteListPath;
+                Properties.Settings.Default.Save();
+
+                string args = $"--install \"{logsPath}\" \"{whiteListPath}\"";
+                RunServiceCommand(args);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Ошибка установки службы: {ex.Message}", ex);
+            }
         }
 
-        // ДОБАВЛЯЕМ новый метод для настройки самовосстановления:
+
         private static void ConfigureServiceRecovery()
         {
             try
@@ -161,7 +246,6 @@ namespace WPFAPP.Managers
             }
         }
 
-        // ДОБАВЛЯЕМ метод для выполнения SC команды:
         private static bool RunSCCommand(string arguments, string operationName)
         {
             try
@@ -225,7 +309,7 @@ namespace WPFAPP.Managers
             }
         }
 
-        private static void RunServiceCommand(string arguments)
+        /*private static void RunServiceCommand(string arguments)
         {
             try
             {
@@ -259,35 +343,92 @@ namespace WPFAPP.Managers
             {
                 throw new Exception($"Ошибка выполнения команды: {ex.Message}");
             }
+        }*/
+
+        private static void RunServiceCommand(string arguments)
+        {
+            try
+            {
+                string exePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ApplicationControlService.exe");
+
+                if (!File.Exists(exePath))
+                {
+                    throw new FileNotFoundException($"Файл службы не найден: {exePath}");
+                }
+
+                ProcessStartInfo startInfo = new ProcessStartInfo
+                {
+                    FileName = exePath,
+                    Arguments = arguments,
+                    UseShellExecute = true,
+                    Verb = "runas"
+                };
+
+                using (Process process = Process.Start(startInfo))
+                {
+                    if (process != null)
+                    {
+                        process.WaitForExit(60000);
+                        if (process.ExitCode != 0)
+                        {
+                            throw new Exception($"Ошибка (код: {process.ExitCode})");
+                        }
+                    }
+                }
+            }
+            catch (System.ComponentModel.Win32Exception ex) when (ex.NativeErrorCode == 1223)
+            {
+                throw new Exception("Операция отменена пользователем");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Ошибка: {ex.Message}");
+            }
         }
         public static bool UninstallService()
         {
             try
             {
-                if (!File.Exists(ServiceExePath))
+                // 1. Сначала останавливаем службу
+                try
                 {
-                    throw new FileNotFoundException($"Файл службы не найден: {ServiceExePath}");
+                    using (ServiceController sc = new ServiceController(ServiceName))
+                    {
+                        if (sc.Status == ServiceControllerStatus.Running)
+                        {
+                            Console.WriteLine("Остановка службы...");
+                            sc.Stop();
+                            sc.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromSeconds(30));
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Ошибка остановки: {ex.Message}");
+                    // Пробуем через taskkill
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "taskkill.exe",
+                        Arguments = "/F /IM ApplicationControlService.exe",
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    })?.WaitForExit(5000);
                 }
 
-                // Используем Process.Start без ожидания завершения
-                ProcessStartInfo startInfo = new ProcessStartInfo
+                // 2. Удаляем службу
+                using (Process process = new Process())
                 {
-                    FileName = ServiceExePath,
-                    Arguments = "--uninstall",
-                    UseShellExecute = true,
-                    CreateNoWindow = true,
-                    Verb = "runas" // Запуск от имени администратора
-                };
+                    process.StartInfo.FileName = "sc.exe";
+                    process.StartInfo.Arguments = $"delete {ServiceName}";
+                    process.StartInfo.UseShellExecute = true;
+                    process.StartInfo.Verb = "runas";
+                    process.StartInfo.CreateNoWindow = true;
 
-                Process.Start(startInfo);
+                    process.Start();
+                    process.WaitForExit(10000);
 
-                // Не ждем завершения, чтобы не блокировать UI
-                return true;
-            }
-            catch (System.ComponentModel.Win32Exception ex) when (ex.NativeErrorCode == 1223)
-            {
-                // Пользователь отменил UAC
-                throw new Exception("Операция отменена пользователем");
+                    return process.ExitCode == 0;
+                }
             }
             catch (Exception ex)
             {
@@ -368,6 +509,100 @@ namespace WPFAPP.Managers
             catch (Exception ex)
             {
                 return $"Ошибка получения информации: {ex.Message}";
+            }
+        }
+
+
+        public static void ClearAllLogs()
+        {
+            try
+            {
+                string logDir = GetLogDirectory();
+
+                if (!Directory.Exists(logDir))
+                {
+                    Directory.CreateDirectory(logDir);
+                }
+
+                string[] logFiles = {
+                    "detailed.log",
+                    "service.log",
+                    "terminations.log",
+                    "compact.log",
+                    "crash.log"
+                };
+
+                int cleared = 0;
+                foreach (var logFile in logFiles)
+                {
+                    string fullPath = Path.Combine(logDir, logFile);
+                    if (File.Exists(fullPath))
+                    {
+                        File.WriteAllText(fullPath, string.Empty);
+                        cleared++;
+                    }
+                }
+
+                Debug.WriteLine($"Cleared {cleared} log files in {logDir}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Clear logs error: {ex.Message}");
+                throw;
+            }
+        }
+
+        public static string GetLogDirectory()
+        {
+            try
+            {
+                // Сначала пробуем из настроек
+                string path = Properties.Settings.Default.LogsPath;
+                if (!string.IsNullOrEmpty(path) && Directory.Exists(path))
+                {
+                    return path;
+                }
+
+                // Путь по умолчанию
+                string defaultPath = @"C:\ProgramData\AppControl\Logs";
+                if (!Directory.Exists(defaultPath))
+                {
+                    Directory.CreateDirectory(defaultPath);
+                }
+                return defaultPath;
+            }
+            catch
+            {
+                return @"C:\ProgramData\AppControl\Logs";
+            }
+        }
+
+        public static bool OpenLogsInNotepad()
+        {
+            try
+            {
+                string logDir = GetLogDirectory();
+                string logPath = Path.Combine(logDir, "detailed.log");
+
+                if (!File.Exists(logPath))
+                {
+                    // Создаем пустой файл если нет
+                    Directory.CreateDirectory(logDir);
+                    File.WriteAllText(logPath, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] Лог-файл создан\n");
+                }
+
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "notepad.exe",
+                    Arguments = logPath,
+                    UseShellExecute = true
+                });
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Open logs error: {ex.Message}");
+                return false;
             }
         }
 
