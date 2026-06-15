@@ -335,7 +335,7 @@ namespace WPFAPP.Managers
         {
             try
             {
-                using (var sc = new ServiceController("AppControlService"))
+                using (var sc = new ServiceController("ApplicationControlService"))
                 {
                     return sc.Status == ServiceControllerStatus.Running;
                 }
@@ -350,7 +350,7 @@ namespace WPFAPP.Managers
         {
             try
             {
-                using (var sc = new ServiceController("AppControlService"))
+                using (var sc = new ServiceController("ApplicationControlService"))
                 {
                     if (sc.Status == ServiceControllerStatus.Running)
                     {

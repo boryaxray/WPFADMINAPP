@@ -10,7 +10,7 @@ namespace WPFAPP.Managers
     public static class ServiceManager
     {
         private static readonly string ServiceExePath = "ApplicationControlService.exe";
-        private static readonly string ServiceName = "AppControlService";
+        private static readonly string ServiceName = "ApplicationControlService";
         private static string _cachedStatus = "Unknown";
         private static DateTime _lastStatusCheck = DateTime.MinValue;
         private static readonly TimeSpan _cacheDuration = TimeSpan.FromSeconds(2);
@@ -39,69 +39,16 @@ namespace WPFAPP.Managers
         {
             try
             {
-                // Проверяем через SC QUERY (самый надежный способ)
-                string scOutput = RunScQuery();
-
-                if (string.IsNullOrEmpty(scOutput))
-                    return "Not Installed";
-
-                if (scOutput.Contains("STATE") && scOutput.Contains("RUNNING"))
-                    return "Running";
-
-                if (scOutput.Contains("STATE") && scOutput.Contains("STOPPED"))
-                    return "Stopped";
-
-                if (scOutput.Contains("OpenService FAILED") || scOutput.Contains("1060"))
-                    return "Not Installed";
-
-                // Альтернатива - проверка через ServiceController
-                try
+                using (ServiceController sc = new ServiceController(ServiceName)) // Теперь использует правильное имя
                 {
-                    using (var sc = new ServiceController(ServiceName))
-                    {
-                        sc.Refresh();
-                        return sc.Status.ToString();
-                    }
-                }
-                catch (InvalidOperationException)
-                {
-                    return "Not Installed";
+                    return sc.Status.ToString();
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"GetServiceStatus error: {ex.Message}");
-                return "Error";
+                return "Not Installed";
             }
         }
-        private static string RunScQuery()
-        {
-            try
-            {
-                using (Process process = new Process())
-                {
-                    process.StartInfo.FileName = "sc.exe";
-                    process.StartInfo.Arguments = $"query {ServiceName}";
-                    process.StartInfo.UseShellExecute = false;
-                    process.StartInfo.CreateNoWindow = true;
-                    process.StartInfo.RedirectStandardOutput = true;
-                    process.StartInfo.RedirectStandardError = true;
-                    process.StartInfo.StandardOutputEncoding = Encoding.GetEncoding(866);
-
-                    process.Start();
-                    string output = process.StandardOutput.ReadToEnd();
-                    process.WaitForExit(3000);
-
-                    return output;
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"RunScQuery error: {ex.Message}");
-                return string.Empty;
-            }
-        }
-
         /*        public static void InstallService(string logsPath = null, string whiteListPath = null)
                 {
                     try
@@ -185,6 +132,143 @@ namespace WPFAPP.Managers
             }
         }*/
 
+
+        public static bool ForceStopService()
+        {
+            try
+            {
+                Debug.WriteLine("Принудительная остановка службы...");
+
+                // 1. Завершаем процесс службы
+                bool processKilled = false;
+                foreach (var proc in Process.GetProcessesByName("ApplicationControlService"))
+                {
+                    try
+                    {
+                        proc.Kill();
+                        proc.WaitForExit(5000);
+                        Debug.WriteLine($"Завершен процесс PID: {proc.Id}");
+                        processKilled = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Ошибка завершения процесса: {ex.Message}");
+                    }
+                }
+
+                // 2. Останавливаем службу через sc
+                try
+                {
+                    using (Process process = new Process())
+                    {
+                        process.StartInfo.FileName = "sc.exe";
+                        process.StartInfo.Arguments = "stop ApplicationControlService";
+                        process.StartInfo.UseShellExecute = false;
+                        process.StartInfo.CreateNoWindow = true;
+                        process.StartInfo.RedirectStandardOutput = true;
+                        process.Start();
+                        process.WaitForExit(10000);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Ошибка остановки службы: {ex.Message}");
+                }
+
+                return processKilled;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"ForceStopService error: {ex.Message}");
+                return false;
+            }
+        }
+
+        public static bool ForceUninstallService()
+        {
+            try
+            {
+                Debug.WriteLine("Принудительное удаление службы...");
+
+                // 1. Принудительно завершаем процесс
+                foreach (var proc in Process.GetProcessesByName("ApplicationControlService"))
+                {
+                    try
+                    {
+                        proc.Kill();
+                        proc.WaitForExit(5000);
+                    }
+                    catch { }
+                }
+
+                Thread.Sleep(1000);
+
+                // 2. Останавливаем службу
+                try
+                {
+                    using (Process process = new Process())
+                    {
+                        process.StartInfo.FileName = "sc.exe";
+                        process.StartInfo.Arguments = "stop ApplicationControlService";
+                        process.StartInfo.UseShellExecute = false;
+                        process.StartInfo.CreateNoWindow = true;
+                        process.Start();
+                        process.WaitForExit(10000);
+                    }
+                }
+                catch { }
+
+                Thread.Sleep(1000);
+
+                // 3. Удаляем службу
+                bool deleted = false;
+                try
+                {
+                    using (Process process = new Process())
+                    {
+                        process.StartInfo.FileName = "sc.exe";
+                        process.StartInfo.Arguments = "delete ApplicationControlService";
+                        process.StartInfo.UseShellExecute = true;
+                        process.StartInfo.Verb = "runas";
+                        process.Start();
+                        process.WaitForExit(10000);
+                        deleted = process.ExitCode == 0;
+                    }
+                }
+                catch { }
+
+                // 4. Удаляем ключ реестра
+                try
+                {
+                    Microsoft.Win32.Registry.LocalMachine.DeleteSubKeyTree(
+                        @"SYSTEM\CurrentControlSet\Services\ApplicationControlService");
+                }
+                catch { }
+
+                // 5. Даем время на завершение
+                Thread.Sleep(2000);
+
+                return deleted;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"ForceUninstallService error: {ex.Message}");
+                return false;
+            }
+        }
+
+        public static bool IsServiceProcessRunning()
+        {
+            try
+            {
+                return Process.GetProcessesByName("ApplicationControlService").Length > 0;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         public static void InstallService(string logsPath = null, string whiteListPath = null)
         {
             try
@@ -229,12 +313,12 @@ namespace WPFAPP.Managers
                 // Команда для настройки восстановления при сбоях
                 // reset= 0 - счетчик сбоев никогда не сбрасывается
                 // actions= restart/5000/restart/5000/restart/5000 - 3 попытки перезапуска через 5 секунд
-                string recoveryCommand = $"failure AppControlService reset= 86400 actions= restart/5000/restart/5000/restart/5000";
+                string recoveryCommand = $"failure ApplicationControlService reset= 86400 actions= restart/5000/restart/5000/restart/5000";
 
                 RunSCCommand(recoveryCommand, "настройка восстановления");
 
                 // Включаем флаг восстановления при аварийном завершении
-                string failureFlagCommand = $"failureflag AppControlService 1";
+                string failureFlagCommand = $"failureflag ApplicationControlService 1";
                 RunSCCommand(failureFlagCommand, "включение восстановления");
 
                 System.Diagnostics.Debug.WriteLine("Самовосстановление настроено успешно");
@@ -389,50 +473,100 @@ namespace WPFAPP.Managers
         {
             try
             {
-                // 1. Сначала останавливаем службу
+                Debug.WriteLine("=== ПРИНУДИТЕЛЬНОЕ УДАЛЕНИЕ СЛУЖБЫ ===");
+
+                // 1. Сначала принудительно завершаем процесс
+                bool processKilled = false;
+                foreach (var proc in Process.GetProcessesByName("ApplicationControlService"))
+                {
+                    try
+                    {
+                        proc.Kill();
+                        proc.WaitForExit(5000);
+                        Debug.WriteLine($"Процесс завершен, PID: {proc.Id}");
+                        processKilled = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Ошибка завершения: {ex.Message}");
+                    }
+                }
+
+                // Ждем пока процесс точно завершится
+                Thread.Sleep(3000);
+
+                // 2. Пробуем остановить службу (на случай если она еще жива)
                 try
                 {
-                    using (ServiceController sc = new ServiceController(ServiceName))
+                    using (Process process = new Process())
                     {
-                        if (sc.Status == ServiceControllerStatus.Running)
-                        {
-                            Console.WriteLine("Остановка службы...");
-                            sc.Stop();
-                            sc.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromSeconds(30));
-                        }
+                        process.StartInfo.FileName = "sc.exe";
+                        process.StartInfo.Arguments = "stop AppControlService";
+                        process.StartInfo.UseShellExecute = true;
+                        process.StartInfo.Verb = "runas";
+                        process.StartInfo.CreateNoWindow = true;
+                        process.Start();
+                        process.WaitForExit(10000);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Ошибка остановки: {ex.Message}");
-                    // Пробуем через taskkill
-                    Process.Start(new ProcessStartInfo
-                    {
-                        FileName = "taskkill.exe",
-                        Arguments = "/F /IM ApplicationControlService.exe",
-                        UseShellExecute = false,
-                        CreateNoWindow = true
-                    })?.WaitForExit(5000);
+                    Debug.WriteLine($"Ошибка sc stop: {ex.Message}");
                 }
 
-                // 2. Удаляем службу
-                using (Process process = new Process())
+                Thread.Sleep(2000);
+
+                // 3. Удаляем службу
+                try
                 {
-                    process.StartInfo.FileName = "sc.exe";
-                    process.StartInfo.Arguments = $"delete {ServiceName}";
-                    process.StartInfo.UseShellExecute = true;
-                    process.StartInfo.Verb = "runas";
-                    process.StartInfo.CreateNoWindow = true;
-
-                    process.Start();
-                    process.WaitForExit(10000);
-
-                    return process.ExitCode == 0;
+                    using (Process process = new Process())
+                    {
+                        process.StartInfo.FileName = "sc.exe";
+                        process.StartInfo.Arguments = "delete AppControlService";
+                        process.StartInfo.UseShellExecute = true;
+                        process.StartInfo.Verb = "runas";
+                        process.StartInfo.CreateNoWindow = true;
+                        process.Start();
+                        process.WaitForExit(10000);
+                        Debug.WriteLine($"SC delete exit code: {process.ExitCode}");
+                    }
                 }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Ошибка sc delete: {ex.Message}");
+                }
+
+                // 4. Удаляем ключ реестра
+                try
+                {
+                    Microsoft.Win32.Registry.LocalMachine.DeleteSubKeyTree(
+                        @"SYSTEM\CurrentControlSet\Services\AppControlService");
+                    Debug.WriteLine("Ключ реестра удален");
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Ошибка удаления реестра: {ex.Message}");
+                }
+
+                // 5. Еще раз принудительно завершаем процесс (на случай если перезапустился)
+                Thread.Sleep(1000);
+                foreach (var proc in Process.GetProcessesByName("ApplicationControlService"))
+                {
+                    try
+                    {
+                        proc.Kill();
+                        Debug.WriteLine($"Повторно завершен процесс");
+                    }
+                    catch { }
+                }
+
+                Debug.WriteLine("Служба удалена");
+                return true;
             }
             catch (Exception ex)
             {
-                throw new Exception($"Ошибка удаления службы: {ex.Message}");
+                Debug.WriteLine($"Ошибка удаления: {ex.Message}");
+                return false;
             }
         }
 
@@ -443,7 +577,7 @@ namespace WPFAPP.Managers
                 using (Process process = new Process())
                 {
                     process.StartInfo.FileName = "sc.exe";
-                    process.StartInfo.Arguments = "start AppControlService";
+                    process.StartInfo.Arguments = "start ApplicationControlService";
                     process.StartInfo.UseShellExecute = false;
                     process.StartInfo.CreateNoWindow = true;
                     process.StartInfo.RedirectStandardOutput = true;
@@ -468,7 +602,7 @@ namespace WPFAPP.Managers
                 using (Process process = new Process())
                 {
                     process.StartInfo.FileName = "sc.exe";
-                    process.StartInfo.Arguments = "stop AppControlService";
+                    process.StartInfo.Arguments = "stop ApplicationControlService";
                     process.StartInfo.UseShellExecute = false;
                     process.StartInfo.CreateNoWindow = true;
                     process.StartInfo.RedirectStandardOutput = true;
@@ -493,7 +627,7 @@ namespace WPFAPP.Managers
                 using (Process process = new Process())
                 {
                     process.StartInfo.FileName = "sc.exe";
-                    process.StartInfo.Arguments = "qfailure AppControlService";
+                    process.StartInfo.Arguments = "qfailure ApplicationControlService";
                     process.StartInfo.UseShellExecute = false;
                     process.StartInfo.CreateNoWindow = true;
                     process.StartInfo.RedirectStandardOutput = true;
@@ -662,7 +796,7 @@ namespace WPFAPP.Managers
                 using (Process process = new Process())
                 {
                     process.StartInfo.FileName = "sc.exe";
-                    process.StartInfo.Arguments = "stop AppControlService";
+                    process.StartInfo.Arguments = "stop ApplicationControlService";
                     process.StartInfo.UseShellExecute = false;
                     process.StartInfo.CreateNoWindow = true;
                     process.StartInfo.RedirectStandardOutput = true;
@@ -731,24 +865,28 @@ namespace WPFAPP.Managers
             }
         }
 
-        private static void AllowServiceStop()
+        public static void AllowServiceStop()
         {
             try
             {
-                // Отправляем сигнал службе разрешить остановку
-                using (var sc = new ServiceController("AppControlService"))
+                using (var sc = new ServiceController(ServiceName))
                 {
-                    sc.ExecuteCommand(128); // Пользовательская команда 128
+                    // Отправляем пользовательскую команду 128 для разрешения остановки
+                    sc.ExecuteCommand(128);
+                    Debug.WriteLine("Команда разрешения остановки отправлена службе");
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Ошибка отправки команды: {ex.Message}");
+            }
         }
 
         private static void DenyServiceStop()
         {
             try
             {
-                using (var sc = new ServiceController("AppControlService"))
+                using (var sc = new ServiceController("ApplicationControlService"))
                 {
                     sc.ExecuteCommand(129); // Пользовательская команда 129
                 }

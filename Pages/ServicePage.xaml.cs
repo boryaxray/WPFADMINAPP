@@ -2,6 +2,8 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.ServiceProcess;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -75,35 +77,26 @@ namespace WPFAPP.Pages
 
                 await Dispatcher.InvokeAsync(() =>
                 {
-                    string displayText = status switch
+                    if (status == "Not Installed")
                     {
-                        "Running" => "Работает",
-                        "Stopped" => "Остановлена",
-                        "Not Installed" => "Не установлена",
-                        "StopPending" => "Останавливается",
-                        "StartPending" => "Запускается",
-                        _ => status
-                    };
-
-                    StatusText.Text = $"Статус: {displayText}";
-
-                    switch (status)
-                    {
-                        case "Running":
-                            StatusIcon.Fill = Brushes.Green;
-                            break;
-                        case "Stopped":
-                            StatusIcon.Fill = Brushes.Orange;
-                            break;
-                        case "Not Installed":
-                            StatusIcon.Fill = Brushes.Red;
-                            break;
-                        default:
-                            StatusIcon.Fill = Brushes.Gray;
-                            break;
+                        StatusText.Text = "Статус: Не установлена";
+                        StatusIcon.Fill = Brushes.Red;
                     }
-
-                    Debug.WriteLine($"ServicePage status: {status}");
+                    else if (status == "Running")
+                    {
+                        StatusText.Text = "Статус: Работает";
+                        StatusIcon.Fill = Brushes.Green;
+                    }
+                    else if (status == "Stopped")
+                    {
+                        StatusText.Text = "Статус: Остановлена";
+                        StatusIcon.Fill = Brushes.Orange;
+                    }
+                    else
+                    {
+                        StatusText.Text = $"Статус: {status}";
+                        StatusIcon.Fill = Brushes.Gray;
+                    }
                 });
             }
             catch (Exception ex)
@@ -111,7 +104,7 @@ namespace WPFAPP.Pages
                 Debug.WriteLine($"LoadStatus error: {ex.Message}");
                 await Dispatcher.InvokeAsync(() =>
                 {
-                    StatusText.Text = "Ошибка";
+                    StatusText.Text = "Статус: Ошибка";
                     StatusIcon.Fill = Brushes.Red;
                 });
             }
@@ -208,7 +201,7 @@ namespace WPFAPP.Pages
         {
             try
             {
-                string servicePath = @"SYSTEM\CurrentControlSet\Services\AppControlService";
+                string servicePath = @"SYSTEM\CurrentControlSet\Services\ApplicationControlService";
 
                 using (var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(servicePath, true))
                 {
@@ -245,54 +238,101 @@ namespace WPFAPP.Pages
         private async void UninstallBtn_Click(object sender, RoutedEventArgs e)
         {
             MessageBoxResult confirm = MessageBox.Show(
-                "Удалить службу?\n\nДля удаления требуются права администратора.",
+                "УДАЛЕНИЕ СЛУЖБЫ\n\n" +
+                "Процесс службы будет принудительно завершен.\n" +
+                "Продолжить?",
                 "Подтверждение удаления",
                 MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
+                MessageBoxImage.Warning);
 
             if (confirm == MessageBoxResult.Yes)
             {
                 try
                 {
-                    // Показываем прогресс
                     UninstallBtn.Content = "Удаление...";
                     UninstallBtn.IsEnabled = false;
 
-                    try
+                    // Показываем прогресс
+                    StatusText.Text = "Статус: Остановка службы...";
+                    StatusIcon.Fill = Brushes.Orange;
+
+                    await Task.Run(() => ServiceManager.UninstallService());
+
+                    // Проверяем результат
+                    await Task.Delay(2000);
+                    bool processStillRunning = await Task.Run(() => ServiceManager.IsServiceProcessRunning());
+
+
+                    if (processStillRunning)
                     {
-                        // Запускаем в фоновом потоке
-                        await System.Threading.Tasks.Task.Run(() =>
-                        {
-                            ServiceManager.UninstallService();
-                        });
-
-                        // Ждем немного и обновляем статус
-                        await System.Threading.Tasks.Task.Delay(3000);
-                        LoadStatus();
-
-                        MessageBox.Show("Команда удаления отправлена.",
-                            "Информация",
+                        ForceKillServiceProcess();
+                        MessageBox.Show(
+                            "Служба удалена, но процесс еще работает.\n\n" +
+                            "Завершите процесс ApplicationControlService.exe в диспетчере задач вручную.",
+                            "Внимание",
                             MessageBoxButton.OK,
-                            MessageBoxImage.Information);
+                            MessageBoxImage.Warning);
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка",
-                            MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
-                    finally
-                    {
-                        UninstallBtn.Content = "Удалить";
-                        UninstallBtn.IsEnabled = true;
+                        MessageBox.Show("Служба успешно удалена", "Успех",
+                            MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка",
                         MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                finally
+                {
                     UninstallBtn.Content = "Удалить";
                     UninstallBtn.IsEnabled = true;
                 }
+            }
+        }
+
+        public static void ForceKillServiceProcess()
+        {
+            try
+            {
+                // Используем taskkill с флагом /F для принудительного завершения
+                using (Process process = new Process())
+                {
+                    process.StartInfo.FileName = "taskkill.exe";
+                    process.StartInfo.Arguments = "/F /IM ApplicationControlService.exe /T";
+                    process.StartInfo.UseShellExecute = true;
+                    process.StartInfo.Verb = "runas";
+                    process.StartInfo.CreateNoWindow = true;
+                    process.Start();
+                    process.WaitForExit(10000);
+                    Debug.WriteLine("taskkill выполнен");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"taskkill error: {ex.Message}");
+            }
+        }
+
+        private void RunScCommand(string arguments)
+        {
+            try
+            {
+                using (Process process = new Process())
+                {
+                    process.StartInfo.FileName = "sc.exe";
+                    process.StartInfo.Arguments = arguments;
+                    process.StartInfo.UseShellExecute = false;
+                    process.StartInfo.CreateNoWindow = true;
+                    process.StartInfo.RedirectStandardOutput = true;
+                    process.Start();
+                    process.WaitForExit(10000);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"SC ошибка: {ex.Message}");
             }
         }
 

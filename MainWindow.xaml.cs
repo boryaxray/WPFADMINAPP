@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
+using System.ServiceProcess;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -146,94 +148,43 @@ namespace WPFAPP
         {
             try
             {
-                // Запускаем в отдельном потоке
                 string status = await Task.Run(() => ServiceManager.GetServiceStatus());
 
-                // Обновляем UI в главном потоке
                 await Dispatcher.InvokeAsync(() =>
                 {
-                    string displayText = status switch
+                    if (status == "Not Installed")
                     {
-                        "Running" => "Работает",
-                        "Stopped" => "Остановлена",
-                        "StopPending" => "Останавливается",
-                        "StartPending" => "Запускается",
-                        "Not Installed" => "Не установлена",
-                        "Error" => "Ошибка",
-                        _ => status
-                    };
-
-                    ServiceStatusText.Text = displayText;
-
-                    switch (status)
-                    {
-                        case "Running":
-                            StatusDot.Fill = Brushes.LimeGreen;
-                            ProtectionStatusText.Text = "🛡️ Защита активна";
-                            ProtectionStatusText.Foreground = new SolidColorBrush(Color.FromRgb(76, 175, 80));
-                            break;
-                        case "Stopped":
-                            StatusDot.Fill = Brushes.Orange;
-                            ProtectionStatusText.Text = "⚠️ Служба остановлена";
-                            ProtectionStatusText.Foreground = new SolidColorBrush(Color.FromRgb(255, 152, 0));
-                            break;
-                        case "Not Installed":
-                            StatusDot.Fill = Brushes.Red;
-                            ProtectionStatusText.Text = "❌ Служба не установлена";
-                            ProtectionStatusText.Foreground = new SolidColorBrush(Color.FromRgb(244, 67, 54));
-                            break;
-                        default:
-                            StatusDot.Fill = Brushes.Gray;
-                            ProtectionStatusText.Text = "❓ Статус защиты неизвестен";
-                            ProtectionStatusText.Foreground = new SolidColorBrush(Color.FromRgb(158, 158, 158));
-                            break;
+                        ServiceStatusText.Text = "Не установлена";
+                        StatusDot.Fill = Brushes.Red;
+                        ProtectionStatusText.Text = "❌ Служба не установлена";
+                        ProtectionStatusText.Foreground = new SolidColorBrush(Color.FromRgb(244, 67, 54));
                     }
-
-                    Debug.WriteLine($"Status updated: {status}");
+                    else if (status == "Running")
+                    {
+                        ServiceStatusText.Text = "Работает";
+                        StatusDot.Fill = Brushes.LimeGreen;
+                        ProtectionStatusText.Text = "🛡️ Защита активна";
+                        ProtectionStatusText.Foreground = new SolidColorBrush(Color.FromRgb(76, 175, 80));
+                    }
+                    else if (status == "Stopped")
+                    {
+                        ServiceStatusText.Text = "Остановлена";
+                        StatusDot.Fill = Brushes.Orange;
+                        ProtectionStatusText.Text = "⚠️ Служба остановлена";
+                        ProtectionStatusText.Foreground = new SolidColorBrush(Color.FromRgb(255, 152, 0));
+                    }
+                    else
+                    {
+                        ServiceStatusText.Text = status;
+                        StatusDot.Fill = Brushes.Gray;
+                        ProtectionStatusText.Text = "❓ Статус неизвестен";
+                        ProtectionStatusText.Foreground = new SolidColorBrush(Color.FromRgb(158, 158, 158));
+                    }
                 });
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"UpdateServiceStatus error: {ex.Message}");
-                await Dispatcher.InvokeAsync(() =>
-                {
-                    ServiceStatusText.Text = "Ошибка";
-                    StatusDot.Fill = Brushes.Gray;
-                });
-            }
-        }
-
-        private void UpdateProtectionStatus()
-        {
-            try
-            {
-                string serviceStatus = ServiceManager.GetServiceStatus();
-
-                if (serviceStatus == "Running")
-                {
-                    ProtectionStatusText.Text = "🛡️ Защита активна";
-                    ProtectionStatusText.Foreground = new SolidColorBrush(Color.FromRgb(76, 175, 80));
-                }
-                else if (serviceStatus == "Stopped")
-                {
-                    ProtectionStatusText.Text = "⚠️ Служба остановлена";
-                    ProtectionStatusText.Foreground = new SolidColorBrush(Color.FromRgb(255, 152, 0));
-                }
-                else if (serviceStatus == "Not Installed")
-                {
-                    ProtectionStatusText.Text = "❌ Служба не установлена";
-                    ProtectionStatusText.Foreground = new SolidColorBrush(Color.FromRgb(244, 67, 54));
-                }
-                else
-                {
-                    ProtectionStatusText.Text = "❓ Статус защиты неизвестен";
-                    ProtectionStatusText.Foreground = new SolidColorBrush(Color.FromRgb(158, 158, 158));
-                }
-            }
-            catch
-            {
-                ProtectionStatusText.Text = "❌ Ошибка проверки защиты";
-                ProtectionStatusText.Foreground = new SolidColorBrush(Color.FromRgb(244, 67, 54));
             }
         }
 
