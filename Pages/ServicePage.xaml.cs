@@ -18,6 +18,8 @@ namespace WPFAPP.Pages
         private string _whiteListPath = null;
         private DispatcherTimer _statusTimer;
 
+        // Ключ для сохранения статуса установки службы
+        private const string SERVICE_INSTALLED_KEY = "ServiceInstalled";
 
         public ServicePage()
         {
@@ -28,9 +30,46 @@ namespace WPFAPP.Pages
             _statusTimer.Tick += (s, e) => LoadStatus();
             _statusTimer.Start();
 
-            LoadStatus();
             LoadPaths(); // Загружаем сохраненные пути
+            LoadStatus();
         }
+
+        /// <summary>
+        /// Сохраняет статус установки службы в локальное хранилище
+        /// </summary>
+        private void SetServiceInstalledStatus(bool isInstalled)
+        {
+            try
+            {
+                Properties.Settings.Default[SERVICE_INSTALLED_KEY] = isInstalled;
+                Properties.Settings.Default.Save();
+                Debug.WriteLine($"Статус установки службы сохранен: {(isInstalled ? "Установлена" : "Не установлена")}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Ошибка сохранения статуса установки: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Получает сохраненный статус установки службы
+        /// </summary>
+        private bool GetSavedServiceInstalledStatus()
+        {
+            try
+            {
+                if (Properties.Settings.Default[SERVICE_INSTALLED_KEY] != null)
+                {
+                    return (bool)Properties.Settings.Default[SERVICE_INSTALLED_KEY];
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Ошибка чтения статуса установки: {ex.Message}");
+            }
+            return false;
+        }
+
         private void LoadPaths()
         {
             try
@@ -74,28 +113,58 @@ namespace WPFAPP.Pages
             try
             {
                 string status = await Task.Run(() => ServiceManager.GetServiceStatus());
+                bool savedInstalledStatus = GetSavedServiceInstalledStatus();
 
                 await Dispatcher.InvokeAsync(() =>
                 {
                     if (status == "Not Installed")
                     {
-                        StatusText.Text = "Статус: Не установлена";
+                        // Служба не установлена - проверяем сохраненный статус
+                        if (savedInstalledStatus)
+                        {
+                            // Сохраненный статус говорит что была установлена, но сейчас нет - обновляем
+                            SetServiceInstalledStatus(false);
+                            StatusText.Text = "Статус: Не установлена";
+                        }
+                        else
+                        {
+                            StatusText.Text = "Статус: Не установлена";
+                        }
                         StatusIcon.Fill = Brushes.Red;
                     }
                     else if (status == "Running")
                     {
-                        StatusText.Text = "Статус: Работает";
+                        // Служба работает - сохраняем статус "Установлена"
+                        if (!savedInstalledStatus)
+                        {
+                            SetServiceInstalledStatus(true);
+                        }
+                        StatusText.Text = "Статус: Установлена и работает";
                         StatusIcon.Fill = Brushes.Green;
                     }
                     else if (status == "Stopped")
                     {
-                        StatusText.Text = "Статус: Остановлена";
+                        // Служба остановлена, но установлена
+                        if (!savedInstalledStatus)
+                        {
+                            SetServiceInstalledStatus(true);
+                        }
+                        StatusText.Text = "Статус: Установлена (остановлена)";
                         StatusIcon.Fill = Brushes.Orange;
                     }
                     else
                     {
-                        StatusText.Text = $"Статус: {status}";
-                        StatusIcon.Fill = Brushes.Gray;
+                        // Используем сохраненный статус для неизвестного состояния
+                        if (savedInstalledStatus)
+                        {
+                            StatusText.Text = "Статус: Установлена (проверка...)";
+                            StatusIcon.Fill = Brushes.Orange;
+                        }
+                        else
+                        {
+                            StatusText.Text = $"Статус: {status}";
+                            StatusIcon.Fill = Brushes.Gray;
+                        }
                     }
                 });
             }
@@ -104,8 +173,18 @@ namespace WPFAPP.Pages
                 Debug.WriteLine($"LoadStatus error: {ex.Message}");
                 await Dispatcher.InvokeAsync(() =>
                 {
-                    StatusText.Text = "Статус: Ошибка";
-                    StatusIcon.Fill = Brushes.Red;
+                    // При ошибке показываем сохраненный статус
+                    bool savedStatus = GetSavedServiceInstalledStatus();
+                    if (savedStatus)
+                    {
+                        StatusText.Text = "Статус: Установлена (ошибка подключения)";
+                        StatusIcon.Fill = Brushes.Orange;
+                    }
+                    else
+                    {
+                        StatusText.Text = "Статус: Не установлена";
+                        StatusIcon.Fill = Brushes.Red;
+                    }
                 });
             }
         }
@@ -151,6 +230,9 @@ namespace WPFAPP.Pages
                             ServiceManager.InstallService(_logsPath, _whiteListPath);
                         });
 
+                        // УСПЕШНАЯ УСТАНОВКА - СОХРАНЯЕМ СТАТУС
+                        SetServiceInstalledStatus(true);
+
                         await System.Threading.Tasks.Task.Delay(5000);
                         LoadStatus();
                     }
@@ -164,10 +246,11 @@ namespace WPFAPP.Pages
                         InstallBtn.Content = "Установить";
                         InstallBtn.IsEnabled = true;
                     }
-                     await System.Threading.Tasks.Task.Delay(5000);
+                    await System.Threading.Tasks.Task.Delay(5000);
                     LoadStatus();
                     ConfigureRecoveryViaRegistry();
-                    //Проверяем настройки восстановления
+
+                    // Проверяем настройки восстановления
                     await System.Threading.Tasks.Task.Delay(2000);
                     string recoveryInfo = ServiceManager.GetServiceRecoveryInfo();
 
@@ -181,12 +264,7 @@ namespace WPFAPP.Pages
                             MessageBoxButton.OK,
                             MessageBoxImage.Information);
                     }
-                   
                 }
-
-
-
-
             }
             catch (Exception ex)
             {
@@ -211,15 +289,15 @@ namespace WPFAPP.Pages
                         // 3 попытки перезапуска с интервалом 1000 мс (1 секунда)
                         byte[] failureActions = new byte[]
                         {
-                    0x00, 0x00, 0x00, 0x00, // Reset period (0 = never)
-                    0x00, 0x00, 0x00, 0x00, // Reboot message (unused)
-                    0x03, 0x00, 0x00, 0x00, // 3 actions
-                    0x01, 0x00, 0x00, 0x00, // Action 1: SC_ACTION_RESTART
-                    0xE8, 0x03, 0x00, 0x00, // Delay: 1000 ms (0x3E8)
-                    0x01, 0x00, 0x00, 0x00, // Action 2: SC_ACTION_RESTART
-                    0xE8, 0x03, 0x00, 0x00, // Delay: 1000 ms
-                    0x01, 0x00, 0x00, 0x00, // Action 3: SC_ACTION_RESTART
-                    0xE8, 0x03, 0x00, 0x00  // Delay: 1000 ms
+                        0x00, 0x00, 0x00, 0x00, // Reset period (0 = never)
+                        0x00, 0x00, 0x00, 0x00, // Reboot message (unused)
+                        0x03, 0x00, 0x00, 0x00, // 3 actions
+                        0x01, 0x00, 0x00, 0x00, // Action 1: SC_ACTION_RESTART
+                        0xE8, 0x03, 0x00, 0x00, // Delay: 1000 ms (0x3E8)
+                        0x01, 0x00, 0x00, 0x00, // Action 2: SC_ACTION_RESTART
+                        0xE8, 0x03, 0x00, 0x00, // Delay: 1000 ms
+                        0x01, 0x00, 0x00, 0x00, // Action 3: SC_ACTION_RESTART
+                        0xE8, 0x03, 0x00, 0x00  // Delay: 1000 ms
                         };
 
                         key.SetValue("FailureActions", failureActions, Microsoft.Win32.RegistryValueKind.Binary);
@@ -258,26 +336,26 @@ namespace WPFAPP.Pages
 
                     await Task.Run(() => ServiceManager.UninstallService());
 
+                    // УСПЕШНОЕ УДАЛЕНИЕ - СОХРАНЯЕМ СТАТУС
+                    SetServiceInstalledStatus(false);
+
                     // Проверяем результат
                     await Task.Delay(2000);
                     bool processStillRunning = await Task.Run(() => ServiceManager.IsServiceProcessRunning());
 
-
                     if (processStillRunning)
                     {
                         ForceKillServiceProcess();
-                        MessageBox.Show(
-                            "Служба удалена, но процесс еще работает.\n\n" +
-                            "Завершите процесс ApplicationControlService.exe в диспетчере задач вручную.",
-                            "Внимание",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Warning);
+                        MessageBox.Show("Служба удалена");
                     }
                     else
                     {
                         MessageBox.Show("Служба успешно удалена", "Успех",
                             MessageBoxButton.OK, MessageBoxImage.Information);
                     }
+
+                    // Обновляем статус в UI
+                    LoadStatus();
                 }
                 catch (Exception ex)
                 {
@@ -355,6 +433,7 @@ namespace WPFAPP.Pages
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
         private void BrowseLogsPathBtn_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -438,47 +517,6 @@ namespace WPFAPP.Pages
 
         private void ApplyWhiteListPathBtn_Click(object sender, RoutedEventArgs e)
         {
-            /*            try
-                        {
-                            _whiteListPath = WhiteListPathTextBox.Text.Trim();
-
-                            if (string.IsNullOrEmpty(_whiteListPath))
-                            {
-                                MessageBox.Show("Укажите путь для белого списка", "Ошибка",
-                                    MessageBoxButton.OK, MessageBoxImage.Warning);
-                                return;
-                            }
-
-                            // Создаем директорию если не существует
-                            if (!Directory.Exists(_whiteListPath))
-                            {
-                                try
-                                {
-                                    Directory.CreateDirectory(_whiteListPath);
-                                }
-                                catch (Exception ex)
-                                {
-                                    MessageBox.Show($"Не удалось создать директорию: {ex.Message}", "Ошибка",
-                                        MessageBoxButton.OK, MessageBoxImage.Error);
-                                    return;
-                                }
-                            }
-
-                            // Сохраняем в настройки
-                            Properties.Settings.Default.WhiteListPath = _whiteListPath;
-                            Properties.Settings.Default.Save();
-
-                            // Обновляем путь в WhiteListManager
-                            WhiteListManager.SetConfigPath(_whiteListPath);
-
-                            MessageBox.Show($"Путь для белого списка сохранен:\n{_whiteListPath}", "Успех",
-                                MessageBoxButton.OK, MessageBoxImage.Information);
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка",
-                                MessageBoxButton.OK, MessageBoxImage.Error);
-                        }*/
             try
             {
                 _whiteListPath = WhiteListPathTextBox.Text.Trim();
@@ -532,6 +570,7 @@ namespace WPFAPP.Pages
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
         private void AddAdminUtilityToWhiteList(string whiteListPath)
         {
             try

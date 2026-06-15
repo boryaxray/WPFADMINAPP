@@ -163,7 +163,7 @@
               "RelativeDocumentMoniker": "Pages\\ServicePage.xaml.cs",
               "ToolTip": "C:\\ApplicationControlService\\WPFADMINAPP\\Pages\\ServicePage.xaml.cs",
               "RelativeToolTip": "Pages\\ServicePage.xaml.cs",
-              "ViewState": "AgIAAOsAAAAAAAAAAAASwAsBAAAyAAAAAAAAAA==",
+              "ViewState": "AgIAAOsAAAAAAAAAAAASwA0BAAArAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-12-17T21:07:06.443Z",
               "EditorCaption": ""
@@ -247,8 +247,7 @@
               "RelativeToolTip": "Managers\\ServiceManager.cs",
               "ViewState": "AgIAABUCAAAAAAAAAAAgwDoCAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-19T20:34:04.023Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-19T20:34:04.023Z"
             },
             {
               "$type": "Document",
@@ -260,8 +259,7 @@
               "RelativeToolTip": "MainWindow.xaml.cs",
               "ViewState": "AgIAAJIAAAAAAAAAAIA5wLwAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-17T20:43:04.721Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-17T20:43:04.721Z"
             },
             {
               "$type": "Document",
@@ -273,8 +271,7 @@
               "RelativeToolTip": "Managers\\WhiteListManager.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAEwBAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-19T20:34:04.773Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-19T20:34:04.773Z"
             },
             {
               "$type": "Document",

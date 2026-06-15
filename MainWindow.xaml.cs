@@ -148,6 +148,7 @@ namespace WPFAPP
         {
             try
             {
+                SyncServiceStatus();
                 string status = await Task.Run(() => ServiceManager.GetServiceStatus());
 
                 await Dispatcher.InvokeAsync(() =>
@@ -186,6 +187,28 @@ namespace WPFAPP
             {
                 Debug.WriteLine($"UpdateServiceStatus error: {ex.Message}");
             }
+        }
+
+        private void SyncServiceStatus()
+        {
+            try
+            {
+                bool savedStatus = Properties.Settings.Default.ServiceInstalled;
+                string currentStatus = ServiceManager.GetServiceStatus();
+
+                if (currentStatus == "Not Installed" && savedStatus)
+                {
+                    // Статус рассинхронизирован - обновляем
+                    Properties.Settings.Default.ServiceInstalled = false;
+                    Properties.Settings.Default.Save();
+                }
+                else if ((currentStatus == "Running" || currentStatus == "Stopped") && !savedStatus)
+                {
+                    Properties.Settings.Default.ServiceInstalled = true;
+                    Properties.Settings.Default.Save();
+                }
+            }
+            catch { }
         }
 
         protected override void OnClosed(EventArgs e)
