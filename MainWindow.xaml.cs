@@ -153,25 +153,45 @@ namespace WPFAPP
 
                 await Dispatcher.InvokeAsync(() =>
                 {
-                    if (status == "Not Installed")
+                    // Проверяем наличие процесса службы
+                    bool processExists = Process.GetProcessesByName("ApplicationControlService").Length > 0;
+
+                    if (status == "Not Installed" || status == "NotFound")
                     {
-                        ServiceStatusText.Text = "Не установлена";
-                        StatusDot.Fill = Brushes.Red;
-                        ProtectionStatusText.Text = "❌ Служба не установлена";
-                        ProtectionStatusText.Foreground = new SolidColorBrush(Color.FromRgb(244, 67, 54));
+                        if (processExists)
+                        {
+                            ServiceStatusText.Text = "Запущен";
+                            StatusDot.Fill = Brushes.Orange;
+                            ProtectionStatusText.Text = "⚠️ Служба не зарегистрирована";
+                            ProtectionStatusText.Foreground = new SolidColorBrush(Color.FromRgb(255, 152, 0));
+                        }
+                        else
+                        {
+                            ServiceStatusText.Text = "Не установлена";
+                            StatusDot.Fill = Brushes.Red;
+                            ProtectionStatusText.Text = "❌ Служба не установлена";
+                            ProtectionStatusText.Foreground = new SolidColorBrush(Color.FromRgb(244, 67, 54));
+                        }
                     }
-                    else if (status == "Running")
+                    else if (status == "Running" || status.Contains("Running"))
                     {
                         ServiceStatusText.Text = "Работает";
                         StatusDot.Fill = Brushes.LimeGreen;
                         ProtectionStatusText.Text = "🛡️ Защита активна";
                         ProtectionStatusText.Foreground = new SolidColorBrush(Color.FromRgb(76, 175, 80));
                     }
-                    else if (status == "Stopped")
+                    else if (status == "Stopped" || status == "StopPending")
                     {
                         ServiceStatusText.Text = "Остановлена";
                         StatusDot.Fill = Brushes.Orange;
                         ProtectionStatusText.Text = "⚠️ Служба остановлена";
+                        ProtectionStatusText.Foreground = new SolidColorBrush(Color.FromRgb(255, 152, 0));
+                    }
+                    else if (status.Contains("orphan"))
+                    {
+                        ServiceStatusText.Text = "Работает";
+                        StatusDot.Fill = Brushes.Orange;
+                        ProtectionStatusText.Text = "⚠️ Процесс без службы";
                         ProtectionStatusText.Foreground = new SolidColorBrush(Color.FromRgb(255, 152, 0));
                     }
                     else

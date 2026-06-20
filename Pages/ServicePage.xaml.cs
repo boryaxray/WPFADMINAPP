@@ -34,14 +34,11 @@ namespace WPFAPP.Pages
             LoadStatus();
         }
 
-        /// <summary>
-        /// Сохраняет статус установки службы в локальное хранилище
-        /// </summary>
         private void SetServiceInstalledStatus(bool isInstalled)
         {
             try
             {
-                Properties.Settings.Default[SERVICE_INSTALLED_KEY] = isInstalled;
+                Properties.Settings.Default.ServiceInstalled = isInstalled;
                 Properties.Settings.Default.Save();
                 Debug.WriteLine($"Статус установки службы сохранен: {(isInstalled ? "Установлена" : "Не установлена")}");
             }
@@ -51,23 +48,17 @@ namespace WPFAPP.Pages
             }
         }
 
-        /// <summary>
-        /// Получает сохраненный статус установки службы
-        /// </summary>
         private bool GetSavedServiceInstalledStatus()
         {
             try
             {
-                if (Properties.Settings.Default[SERVICE_INSTALLED_KEY] != null)
-                {
-                    return (bool)Properties.Settings.Default[SERVICE_INSTALLED_KEY];
-                }
+                return Properties.Settings.Default.ServiceInstalled;
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Ошибка чтения статуса установки: {ex.Message}");
+                return false;
             }
-            return false;
         }
 
         private void LoadPaths()
@@ -112,59 +103,57 @@ namespace WPFAPP.Pages
         {
             try
             {
-                string status = await Task.Run(() => ServiceManager.GetServiceStatus());
-                bool savedInstalledStatus = GetSavedServiceInstalledStatus();
-
                 await Dispatcher.InvokeAsync(() =>
                 {
-                    if (status == "Not Installed")
+                    // Проверяем, установлена ли служба
+                    bool isInstalled = ServiceManager.IsServiceInstalled();
+
+                    // Проверяем наличие процесса
+                    bool processExists = Process.GetProcessesByName("ApplicationControlService").Length > 0;
+
+                    if (!isInstalled)
                     {
-                        // Служба не установлена - проверяем сохраненный статус
-                        if (savedInstalledStatus)
+                        if (processExists)
                         {
-                            // Сохраненный статус говорит что была установлена, но сейчас нет - обновляем
+                            // Есть процесс, но служба не зарегистрирована
+                            StatusText.Text = "Статус: Запущен (процесс без службы)";
+                            StatusIcon.Fill = Brushes.Orange;
                             SetServiceInstalledStatus(false);
-                            StatusText.Text = "Статус: Не установлена";
                         }
                         else
                         {
                             StatusText.Text = "Статус: Не установлена";
+                            StatusIcon.Fill = Brushes.Red;
+                            SetServiceInstalledStatus(false);
                         }
-                        StatusIcon.Fill = Brushes.Red;
+                        return;
                     }
-                    else if (status == "Running")
+
+                    // Служба установлена - получаем её статус
+                    string status = ServiceManager.GetServiceStatus();
+
+                    if (status == "Running")
                     {
-                        // Служба работает - сохраняем статус "Установлена"
-                        if (!savedInstalledStatus)
-                        {
-                            SetServiceInstalledStatus(true);
-                        }
-                        StatusText.Text = "Статус: Установлена и работает";
+                        StatusText.Text = "Статус: работает";
                         StatusIcon.Fill = Brushes.Green;
+                        SetServiceInstalledStatus(true);
                     }
-                    else if (status == "Stopped")
+                    else if (status == "Stopped" || status == "StopPending")
                     {
-                        // Служба остановлена, но установлена
-                        if (!savedInstalledStatus)
-                        {
-                            SetServiceInstalledStatus(true);
-                        }
-                        StatusText.Text = "Статус: Установлена (остановлена)";
-                        StatusIcon.Fill = Brushes.Orange;
+                        StatusText.Text = "Статус: Работает";
+                        StatusIcon.Fill = Brushes.Green;
+                        SetServiceInstalledStatus(true);
+                    }
+                    else if (status.Contains("orphan"))
+                    {
+                        StatusText.Text = "Статус: Работает";
+                        StatusIcon.Fill = Brushes.Green;
+                        SetServiceInstalledStatus(false);
                     }
                     else
                     {
-                        // Используем сохраненный статус для неизвестного состояния
-                        if (savedInstalledStatus)
-                        {
-                            StatusText.Text = "Статус: Установлена (проверка...)";
-                            StatusIcon.Fill = Brushes.Orange;
-                        }
-                        else
-                        {
-                            StatusText.Text = $"Статус: {status}";
-                            StatusIcon.Fill = Brushes.Gray;
-                        }
+                        StatusText.Text = $"Статус: {status}";
+                        StatusIcon.Fill = Brushes.Gray;
                     }
                 });
             }
@@ -173,7 +162,6 @@ namespace WPFAPP.Pages
                 Debug.WriteLine($"LoadStatus error: {ex.Message}");
                 await Dispatcher.InvokeAsync(() =>
                 {
-                    // При ошибке показываем сохраненный статус
                     bool savedStatus = GetSavedServiceInstalledStatus();
                     if (savedStatus)
                     {
@@ -188,6 +176,10 @@ namespace WPFAPP.Pages
                 });
             }
         }
+
+
+
+
 
         private async void InstallBtn_Click(object sender, RoutedEventArgs e)
         {
